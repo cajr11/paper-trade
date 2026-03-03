@@ -11,12 +11,12 @@ backend
 │       └── main.go        # Main application logic
 ├── internal               # Internal codebase
 │   ├── transaction        # Domain 'transaction'
-│       ├── handler.go     # User-specific handler
-│       ├── service.go     # User-specific service
-│       ├── repository.go  # User-specific repository
-│       └── transaction.go # User model
+│       ├── handler.go     # Transaction-specific handler
+│       ├── service.go     # Transaction-specific service
+│       ├── repository.go  # Transaction-specific repository
+│       └── transaction.go # Transaction model
 ├── pkg                    # Shared utilities
-├── configs                # Configuration files
+├── config                 # Configuration files
 ├── go.mod                 # Go module definition
 └── go.sum                 # Go module checksum file
 
