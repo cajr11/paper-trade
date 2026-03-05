@@ -22,10 +22,17 @@ COPY . .
 EXPOSE 8080
 
 # Creates a non-root user
+RUN adduser -D ppr-trd-usr
+
+# Creates tmp directory for the app binary -p creates parent directories if they dont exist
+# Changes the tmp folder's owner so your non-root user can write to it (chown user:group)
+# The next step creates a user, it also creates a group with the same name. So sets both the owner and group to the user. 
+RUN mkdir -p /usr/local/paper-trade-backend/tmp && chown ppr-trd-usr:ppr-trd-usr /usr/local/paper-trade-backend/tmp
+
 # This limits permissions and aids in stuff like reducing a hacker's attack surface area in a container
 # They can't install system packages, modify system files, etc
 # -D to disable password
-RUN adduser -D ppr-trd-usr
+
 USER ppr-trd-usr
 
 CMD ["air", "-c", ".air.toml"]
