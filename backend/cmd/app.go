@@ -4,11 +4,13 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+  "github.com/cajr11/paper-trade/backend/internal/health"
 )
 
 func main(){
   r := chi.NewRouter()
   r.Get("/", serve)
+  r.Get("/health", health.HandleHealthCheck)
   http.ListenAndServe(":8080", r)
 }
 
