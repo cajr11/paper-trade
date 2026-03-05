@@ -1,2 +1,6 @@
 # binaries
 tmp/
+
+# env
+.env
+.env.local
