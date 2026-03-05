@@ -21,3 +21,12 @@ backend
 └── go.sum                 # Go module checksum file
 
 ```
+
+### Docker
+
+To build an image from the Dockerfile, in the backend root run:
+
+```
+docker build -t image-name-preference .
+
+```
