@@ -1,0 +1,26 @@
+services:
+  backend:
+    container_name: paper-trade-backend
+    build:
+      context: .
+    ports:
+      - "8080:8080"
+    volumes:
+      # bind mounts the host source to the container so changes reflect immediately
+      - .:/usr/local/paper-trade-backend
+
+  db:
+    container_name: papaer-trade-db
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      # /var/lib/postgresql/data is where the Postgres image stores its database files by default (dictated by the image and in their docs)
+      - paper-trade-db-data:/var/lib/postgresql/data
+
+volumes:
+  paper-trade-db-data:
