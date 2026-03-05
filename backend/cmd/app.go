@@ -14,6 +14,8 @@ func main(){
 
 
 func serve(w http.ResponseWriter, r *http.Request){
+  
    println("server running on port 8080")
+
    w.Write([]byte("welcome"))
 }

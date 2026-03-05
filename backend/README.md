@@ -22,27 +22,38 @@ backend
 
 ```
 
-### Docker
+## Docker
 
-### Using Dockerfile only
+#### Using Dockerfile only
 
 To build an image from the Dockerfile, in the backend root run:
 
 ```
 docker build -t image-name-preference .
-
 ```
 
 To run a container from the built image:
 
 ```
 docker run -d -p host:container image-name-preference .
-
 ```
 
 To bind mount the local source files to the container in order to enable hot reloads:
 
 ```
 docker run -d --name my_site -p host-port:container-port --mount type=bind,source=/absolute/path/to/source,target=/container/path image-name
+```
 
+#### Docker Compose
+
+To start up all backend services in a multi-container app, run:
+
+```
+docker compose up
+```
+
+and to stop and remove containers, networks, and, optionally, volumes and images created run:
+
+```
+docker compose down
 ```
