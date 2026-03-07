@@ -1,11 +1,14 @@
 package tickers
 
+import "strings"
+
 
 type BinanceSymbol struct {
 	Symbol string `json:"symbol"`
 	Status string `json:"status"`
 	BaseAsset string `json:"baseAsset"`
 	QuoteAsset string `json:"quoteAsset"`
+	BaseAssetIconUrl string `json:"baseAssetIconUrl"`
 } 
 
 type BinanceExchangeResult struct {
@@ -28,6 +31,7 @@ func (er *BinanceExchangeResult) FilterUSDTPairs(){
 
 	for _, token := range symbols {
 		if token.QuoteAsset == "USDT" {
+			token.BaseAssetIconUrl = "https://raw.githubusercontent.com/spothq/cryptocurrency-icons/refs/heads/master/128/icon/" + strings.ToLower(token.BaseAsset) + ".png"
 			filteredPairs = append(filteredPairs, token)
 		}
 	}
