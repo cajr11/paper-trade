@@ -6,7 +6,7 @@ import { ThemedView } from "@/components/ui/ThemedView";
 import { BottomTabInset, MaxContentWidth, Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 
-export default function TabTwoScreen() {
+export default function Explore() {
   const safeAreaInsets = useSafeAreaInsets();
   const insets = {
     ...safeAreaInsets,

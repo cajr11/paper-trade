@@ -6,7 +6,7 @@ import {
 import React from "react";
 import { useColorScheme } from "react-native";
 
-import { AnimatedSplashOverlay } from "@/components/AnimatedIcon";
+import { AnimatedSplashOverlay } from "@/components/composed/AnimatedIcon";
 import SessionProvider from "@/providers/SessionProvider";
 import { Slot } from "expo-router";
 

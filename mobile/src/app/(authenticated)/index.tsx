@@ -1,7 +1,7 @@
 import { StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import HintRow from "@/components/HintRow";
+import HintRow from "@/components/composed/HintRow";
 import { ThemedText } from "@/components/ui/ThemedText";
 import { ThemedView } from "@/components/ui/ThemedView";
 import { BottomTabInset, MaxContentWidth, Spacing } from "@/constants/theme";

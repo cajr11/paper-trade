@@ -1,4 +1,4 @@
-import LoadingScreen from "@/components/LoadingScreen";
+import LoadingScreen from "@/components/screens/LoadingScreen";
 import { useSession } from "@/providers/SessionProvider";
 import { Redirect } from "expo-router";
 
