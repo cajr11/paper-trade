@@ -3,13 +3,13 @@ import { useState } from "react";
 import { Dimensions, StyleSheet, View } from "react-native";
 import Animated, { Easing, Keyframe } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
+import LoadingScreen from "./LoadingScreen";
 
 const INITIAL_SCALE_FACTOR = Dimensions.get("screen").height / 90;
 const DURATION = 5000;
 
 export function AnimatedSplashOverlay() {
   const [visible, setVisible] = useState(true);
-
   if (!visible) return null;
 
   const splashKeyframe = new Keyframe({

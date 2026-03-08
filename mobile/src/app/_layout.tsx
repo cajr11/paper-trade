@@ -7,14 +7,18 @@ import React from "react";
 import { useColorScheme } from "react-native";
 
 import { AnimatedSplashOverlay } from "@/components/AnimatedIcon";
-import AppTabs from "@/components/AppTabs";
+import SessionProvider from "@/providers/SessionProvider";
+import { Slot } from "expo-router";
 
-export default function TabLayout() {
+export default function BaseLayout() {
   const colorScheme = useColorScheme();
+
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <AppTabs />
-    </ThemeProvider>
+    <SessionProvider>
+      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+        <Slot />
+        <AnimatedSplashOverlay />
+      </ThemeProvider>
+    </SessionProvider>
   );
 }
