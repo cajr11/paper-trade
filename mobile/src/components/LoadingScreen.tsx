@@ -1,4 +1,3 @@
-import { useSession } from "@/providers/SessionProvider";
 import { ThemedView } from "./ui/ThemedView";
 import { ActivityIndicator } from "react-native";
 
