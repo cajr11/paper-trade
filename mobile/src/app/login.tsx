@@ -1,43 +1,15 @@
 import React from "react";
 import { ThemedView } from "@/components/ui/ThemedView";
 import { ThemedText } from "@/components/ui/ThemedText";
-import { Image } from "expo-image";
-import {
-  ColorSchemeName,
-  Pressable,
-  TextInput,
-  useColorScheme,
-} from "react-native";
+import { Pressable, useColorScheme } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Colors } from "@/constants/theme";
 import FormField from "@/components/composed/FormField";
 import CustomButton from "@/components/ui/CustomButton";
-
-const LogoImage = ({ scheme }: { scheme: ColorSchemeName }) => {
-  if (scheme !== "dark") {
-    return (
-      <ThemedView>
-        <Image
-          source={require("@/assets/images/paper-trade-logo.png")}
-          style={{ width: 180, height: 80 }}
-          contentFit="contain"
-        />
-      </ThemedView>
-    );
-  }
-
-  return (
-    <ThemedView>
-      <Image
-        source={require("@/assets/images/paper-trade-logo-light.png")}
-        style={{ width: 180, height: 80 }}
-        contentFit="contain"
-      />
-    </ThemedView>
-  );
-};
+import LogoImage from "@/components/composed/LogoImage";
+import { useRouter } from "expo-router";
 
 export default function Login() {
+  const router = useRouter();
   const scheme = useColorScheme();
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -74,14 +46,17 @@ export default function Login() {
         <ThemedView style={{ flex: 1 }} />
 
         {/* Alternate action button */}
-        <ThemedView style={{ alignItems: "center", paddingBottom: 16 }}>
+        <Pressable
+          onPress={() => router.replace("/signup")}
+          style={{ alignItems: "center", paddingBottom: 16 }}
+        >
           <ThemedText type="small" themeColor="secondaryText">
             Don't have an account?{" "}
             <ThemedText type="smallBold" themeColor="text">
               Sign up
             </ThemedText>
           </ThemedText>
-        </ThemedView>
+        </Pressable>
       </ThemedView>
     </SafeAreaView>
   );
