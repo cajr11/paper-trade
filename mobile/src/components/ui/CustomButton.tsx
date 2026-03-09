@@ -31,7 +31,15 @@ export default function CustomButton({ label, onPress }: CustomButtonProps) {
           alignItems: "center",
         }}
       >
-        <Text style={{ color: Colors[colorScheme].text }}>{label}</Text>
+        <Text
+          style={{
+            color: Colors[colorScheme].text,
+            fontFamily: "Outfit",
+            fontWeight: 800,
+          }}
+        >
+          {label}
+        </Text>
       </View>
     </Pressable>
   );

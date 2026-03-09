@@ -1,7 +1,7 @@
 import React from "react";
 import { ThemedView } from "@/components/ui/ThemedView";
 import { ThemedText } from "@/components/ui/ThemedText";
-import { Pressable, useColorScheme } from "react-native";
+import { Pressable, useColorScheme, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import FormField from "@/components/composed/FormField";
 import CustomButton from "@/components/ui/CustomButton";
@@ -21,13 +21,14 @@ export default function Signup() {
       >
         {/* Header and subtitle */}
         <LogoImage scheme={scheme} />
-        <ThemedText
-          style={{ width: 160 }}
-          type="small"
-          themeColor="textSecondary"
-        >
-          Practice crypto trading. Zero risk. Real prices.
-        </ThemedText>
+        <View>
+          <ThemedText type="small" themeColor="textSecondary">
+            Create your account.
+          </ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            Start with $10,000 virtual cash
+          </ThemedText>
+        </View>
 
         {/* Form */}
         <ThemedView style={{ marginTop: 60, gap: 30 }}>
