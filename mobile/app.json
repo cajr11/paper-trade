@@ -43,7 +43,7 @@
         "expo-font",
         {
           "fonts": [
-            "node_modules/@expo-google-fonts/outfit/Outfit_900Black.ttf",
+            "node_modules/@expo-google-fonts/outfit/900Black/Outfit_900Black.ttf",
             "node_modules/@expo-google-fonts/outfit/800ExtraBold/Outfit_800ExtraBold.ttf",
             "node_modules/@expo-google-fonts/outfit/700Bold/Outfit_700Bold.ttf",
             "node_modules/@expo-google-fonts/outfit/600SemiBold/Outfit_600SemiBold.ttf",
