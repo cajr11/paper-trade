@@ -5,19 +5,8 @@ import (
 
 )
 
-
-type User struct {
-	Id string
-	Email string
-	FullName string
-	PasswordHash string `json:"-"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
-}
-
 type Session struct {
 	Token string
-	User User
 }
 
 type LoginRequest struct {
