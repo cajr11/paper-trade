@@ -3,6 +3,8 @@ services:
     container_name: paper-trade-backend
     build:
       context: .
+    env_file:
+      - .env
     ports:
       - "8080:8080"
     volumes:
@@ -10,7 +12,7 @@ services:
       - .:/usr/local/paper-trade-backend
 
   db:
-    container_name: papaer-trade-db
+    container_name: paper-trade-db
     image: postgres:17-alpine
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
