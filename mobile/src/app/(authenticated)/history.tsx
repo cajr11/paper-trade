@@ -4,14 +4,13 @@ import {
   FlatList,
   RefreshControl,
   StyleSheet,
+  Text,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { ThemedText } from "@/components/ui/ThemedText";
-import { ThemedView } from "@/components/ui/ThemedView";
+import CoinIcon, { getCoinName } from "@/components/ui/CoinIcon";
 import { Spacing } from "@/constants/theme";
-import { useTheme } from "@/hooks/useTheme";
 import { useTradeStore } from "@/stores/trade-store";
 import type { Trade } from "@/lib/api";
 
@@ -31,13 +30,10 @@ function formatDate(dateString: string): string {
     month: "short",
     day: "numeric",
     year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
   });
 }
 
 export default function History() {
-  const { colors } = useTheme();
   const { trades, loading, refreshing, fetchTrades, refreshTrades } =
     useTradeStore();
 
@@ -51,41 +47,23 @@ export default function History() {
 
   const renderTrade = ({ item }: { item: Trade }) => {
     const isBuy = item.side === "buy";
+    const coinName = getCoinName(item.base_asset);
+    const actionText = isBuy ? `Bought ${coinName}` : `Sold ${coinName}`;
 
     return (
-      <View
-        style={[styles.row, { backgroundColor: colors.backgroundElement }]}
-      >
-        <View style={styles.rowTop}>
-          <View style={styles.rowLeft}>
-            <ThemedText type="default" style={styles.symbol}>
-              {item.base_asset}
-            </ThemedText>
-            <View
-              style={[
-                styles.sideBadge,
-                { backgroundColor: isBuy ? "#22C55E20" : "#EF444420" },
-              ]}
-            >
-              <ThemedText
-                type="small"
-                style={{ color: isBuy ? "#22C55E" : "#EF4444", fontWeight: "600" }}
-              >
-                {item.side.toUpperCase()}
-              </ThemedText>
-            </View>
-          </View>
-          <ThemedText type="default" style={styles.total}>
-            {formatCurrency(item.total)}
-          </ThemedText>
+      <View style={styles.row}>
+        <CoinIcon symbol={item.base_asset} size={44} />
+        <View style={styles.rowInfo}>
+          <Text style={styles.actionText}>{actionText}</Text>
+          <Text style={styles.dateText}>{formatDate(item.created_at)}</Text>
         </View>
-        <View style={styles.rowBottom}>
-          <ThemedText type="small" themeColor="textSecondary">
-            {item.quantity.toFixed(6)} @ {formatCurrency(item.price)}
-          </ThemedText>
-          <ThemedText type="small" themeColor="textSecondary">
-            {formatDate(item.created_at)}
-          </ThemedText>
+        <View style={styles.rowRight}>
+          <Text style={[styles.amountText, { color: isBuy ? "#22C55E" : "#EF4444" }]}>
+            {isBuy ? "+" : "-"}{formatCurrency(item.total)}
+          </Text>
+          <Text style={styles.qtyText}>
+            {item.quantity.toFixed(6)} {item.base_asset}
+          </Text>
         </View>
       </View>
     );
@@ -93,18 +71,16 @@ export default function History() {
 
   if (loading) {
     return (
-      <ThemedView style={styles.centered}>
-        <ActivityIndicator size="large" />
-      </ThemedView>
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color="#000000" />
+      </View>
     );
   }
 
   return (
-    <ThemedView style={styles.container}>
+    <View style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
-        <ThemedText type="subtitle" style={styles.header}>
-          Transaction History
-        </ThemedText>
+        <Text style={styles.header}>Transaction History</Text>
 
         <FlatList
           data={trades}
@@ -116,25 +92,22 @@ export default function History() {
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
           ListEmptyComponent={
-            <ThemedView type="backgroundElement" style={styles.emptyCard}>
-              <ThemedText
-                type="small"
-                themeColor="textSecondary"
-                style={styles.emptyText}
-              >
+            <View style={styles.emptyCard}>
+              <Text style={styles.emptyText}>
                 No transactions yet. Start trading to see your history.
-              </ThemedText>
-            </ThemedView>
+              </Text>
+            </View>
           }
         />
       </SafeAreaView>
-    </ThemedView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#F5F5F5",
   },
   safeArea: {
     flex: 1,
@@ -143,53 +116,81 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#F5F5F5",
   },
   header: {
+    fontSize: 28,
+    fontWeight: "700",
+    color: "#000000",
     marginBottom: Spacing.three,
     marginTop: Spacing.three,
     paddingHorizontal: Spacing.four,
+    fontFamily: "Outfit",
   },
   listContent: {
     paddingHorizontal: Spacing.four,
     paddingBottom: 100,
   },
   row: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
     padding: Spacing.three,
     borderRadius: 12,
     marginBottom: Spacing.two,
-    gap: Spacing.two,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 1,
   },
-  rowTop: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+  rowInfo: {
+    flex: 1,
+    marginLeft: 12,
+    gap: 2,
   },
-  rowLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: Spacing.two,
+  actionText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#000000",
+    fontFamily: "Outfit",
   },
-  symbol: {
-    fontWeight: "700",
+  dateText: {
+    fontSize: 13,
+    fontWeight: "400",
+    color: "#71717A",
+    fontFamily: "Outfit",
   },
-  sideBadge: {
-    paddingHorizontal: Spacing.two,
-    paddingVertical: 2,
-    borderRadius: 6,
+  rowRight: {
+    alignItems: "flex-end",
+    gap: 2,
   },
-  total: {
-    fontWeight: "700",
+  amountText: {
+    fontSize: 16,
+    fontWeight: "600",
+    fontFamily: "Outfit",
   },
-  rowBottom: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+  qtyText: {
+    fontSize: 12,
+    fontWeight: "400",
+    color: "#71717A",
+    fontFamily: "Outfit",
   },
   emptyCard: {
+    backgroundColor: "#FFFFFF",
     padding: Spacing.four,
     borderRadius: 16,
     alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
   emptyText: {
     textAlign: "center",
+    fontSize: 14,
+    color: "#71717A",
+    fontFamily: "Outfit",
   },
 });
