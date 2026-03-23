@@ -22,6 +22,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { api, ApiError, type PriceEntry } from "@/lib/api";
 import { usePortfolioStore } from "@/stores/portfolio-store";
 import { useTradeStore } from "@/stores/trade-store";
+import { useUserStore } from "@/stores/user-store";
 import { useWatchlistStore } from "@/stores/watchlist-store";
 
 type Side = "buy" | "sell";
@@ -41,6 +42,7 @@ export default function Trade() {
 
   const { balance, fetchPortfolio } = usePortfolioStore();
   const { fetchTrades } = useTradeStore();
+  const { fetchUser } = useUserStore();
   const { isWatched, addItem, removeItem, fetchWatchlist } = useWatchlistStore();
 
   const [price, setPrice] = useState<PriceEntry | null>(null);
@@ -95,6 +97,7 @@ export default function Trade() {
       });
       fetchPortfolio();
       fetchTrades();
+      fetchUser();
       Alert.alert(
         "Trade Executed",
         `Successfully ${side === "buy" ? "bought" : "sold"} ${quantity.toFixed(6)} ${baseAsset}`,
