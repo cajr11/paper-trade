@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
+import { Image } from "expo-image";
 
 /**
  * Maps known crypto base assets to their brand colors and display symbols.
@@ -72,13 +73,43 @@ function hashColor(str: string): string {
   return `hsl(${hue}, 55%, 50%)`;
 }
 
+/**
+ * Build the icon URL for a given base asset.
+ * Matches the backend logic in tickers.go: FilterUSDTPairs().
+ */
+export function getIconUrl(baseAsset: string): string {
+  return `https://raw.githubusercontent.com/spothq/cryptocurrency-icons/refs/heads/master/128/icon/${baseAsset.toLowerCase()}.png`;
+}
+
 type CoinIconProps = {
   symbol: string; // e.g. "BTC", "ETH"
   size?: number;
+  iconUrl?: string; // optional explicit URL from backend
 };
 
-export default function CoinIcon({ symbol, size = 40 }: CoinIconProps) {
+export default function CoinIcon({ symbol, size = 40, iconUrl }: CoinIconProps) {
+  const [imgError, setImgError] = useState(false);
   const config = COIN_CONFIG[symbol.toUpperCase()];
+  const resolvedUrl = iconUrl || getIconUrl(symbol);
+
+  // If we have a URL and it hasn't errored, show the real image
+  if (resolvedUrl && !imgError) {
+    return (
+      <Image
+        source={{ uri: resolvedUrl }}
+        style={{
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+        }}
+        contentFit="cover"
+        onError={() => setImgError(true)}
+        recyclingKey={symbol}
+      />
+    );
+  }
+
+  // Fallback: colored circle with letter
   const bgColor = config?.color ?? hashColor(symbol);
   const letter = config?.symbol ?? symbol.charAt(0).toUpperCase();
   const fontSize = size * 0.42;
