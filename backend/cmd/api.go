@@ -7,8 +7,11 @@ import (
 
 	"github.com/cajr11/paper-trade/backend/internal/auth"
 	"github.com/cajr11/paper-trade/backend/internal/health"
+	appMiddleware "github.com/cajr11/paper-trade/backend/internal/middleware"
 	"github.com/cajr11/paper-trade/backend/internal/store"
 	"github.com/cajr11/paper-trade/backend/internal/tickers"
+	"github.com/cajr11/paper-trade/backend/internal/trading"
+	"github.com/cajr11/paper-trade/backend/internal/watchlist"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
@@ -39,17 +42,36 @@ func (app *application) mount() http.Handler {
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(60 * time.Second))
 
-	// Initialize auth
+	// Initialize services and handlers
 	authService := auth.NewAuthService(app.store.User)
 	authHandler := auth.NewAuthHandler(authService)
+	tradingService := trading.NewTradingService(app.store.DB, app.store.User, app.store.Holding, app.store.Trade)
+	tradingHandler := trading.NewTradingHandler(tradingService, app.store.Holding, app.store.Trade, app.store.User)
+	watchlistHandler := watchlist.NewWatchlistHandler(app.store.Watchlist)
 
 	r.Route("/api/v1", func(r chi.Router) {
+		// Public routes
 		r.Get("/health", health.HandleHealthCheck)
 		r.Get("/tickers", tickers.HandleGetAllPairs)
-
-		// Auth routes (public)
 		r.Post("/auth/signup", authHandler.HandleSignup)
 		r.Post("/auth/login", authHandler.HandleLogin)
+
+		// Protected routes
+		r.Group(func(r chi.Router) {
+			r.Use(appMiddleware.AuthRequired)
+
+			// Portfolio
+			r.Get("/portfolio", tradingHandler.HandleGetPortfolio)
+
+			// Trading
+			r.Post("/trades", tradingHandler.HandleExecuteTrade)
+			r.Get("/trades", tradingHandler.HandleGetTradeHistory)
+
+			// Watchlist
+			r.Get("/watchlist", watchlistHandler.HandleGetWatchlist)
+			r.Post("/watchlist", watchlistHandler.HandleAddToWatchlist)
+			r.Delete("/watchlist", watchlistHandler.HandleRemoveFromWatchlist)
+		})
 	})
 
 	return r
