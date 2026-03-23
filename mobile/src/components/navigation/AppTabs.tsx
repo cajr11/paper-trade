@@ -1,78 +1,82 @@
+import { Ionicons } from "@expo/vector-icons";
 import { NativeTabs } from "expo-router/unstable-native-tabs";
 import React from "react";
 import { useColorScheme } from "react-native";
 
 import { Colors } from "@/constants/theme";
 
+const TAB_ICON_SIZE = 22;
+
+function tabIcon(name: keyof typeof Ionicons.glyphMap, color: string) {
+  return Ionicons.getImageSource(name, TAB_ICON_SIZE, color);
+}
+
 export default function AppTabs() {
   const scheme = useColorScheme();
   const colors = Colors[scheme === "unspecified" ? "light" : scheme];
+  const defaultColor = "#A0A0A0";
+  const selectedColor = colors.text;
 
   return (
     <NativeTabs
       backgroundColor={colors.background}
       indicatorColor={colors.backgroundElement}
       iconColor={{
-        default: "#A0A0A0",
-        selected: colors.text,
+        default: defaultColor,
+        selected: selectedColor,
       }}
       labelStyle={{
-        default: { color: "#A0A0A0", fontSize: 10 },
-        selected: { color: colors.text, fontSize: 10 },
+        default: { color: defaultColor, fontSize: 10 },
+        selected: { color: selectedColor, fontSize: 10 },
       }}
     >
       <NativeTabs.Trigger name="index">
         <NativeTabs.Trigger.Label>Portfolio</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
-          sf={{
-            default: "square.grid.2x2",
-            selected: "square.grid.2x2.fill",
+          src={{
+            default: tabIcon("grid-outline", defaultColor),
+            selected: tabIcon("grid", selectedColor),
           }}
-          renderingMode="template"
         />
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="explore">
         <NativeTabs.Trigger.Label>Explore</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
-          sf={{
-            default: "magnifyingglass",
-            selected: "magnifyingglass",
+          src={{
+            default: tabIcon("search-outline", defaultColor),
+            selected: tabIcon("search", selectedColor),
           }}
-          renderingMode="template"
         />
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="watchlist">
         <NativeTabs.Trigger.Label>Watchlist</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
-          sf={{
-            default: "star",
-            selected: "star.fill",
+          src={{
+            default: tabIcon("star-outline", defaultColor),
+            selected: tabIcon("star", selectedColor),
           }}
-          renderingMode="template"
         />
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="history">
         <NativeTabs.Trigger.Label>History</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
-          sf={{
-            default: "clock",
-            selected: "clock.fill",
+          src={{
+            default: tabIcon("time-outline", defaultColor),
+            selected: tabIcon("time", selectedColor),
           }}
-          renderingMode="template"
         />
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="profile">
         <NativeTabs.Trigger.Label>Profile</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
-          sf={{
-            default: "person",
-            selected: "person.fill",
+          src={{
+            default: tabIcon("person-outline", defaultColor),
+            selected: tabIcon("person", selectedColor),
           }}
-          renderingMode="template"
         />
       </NativeTabs.Trigger>
 
