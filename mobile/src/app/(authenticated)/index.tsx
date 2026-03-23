@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
 import {
   ActivityIndicator,
   RefreshControl,
@@ -12,7 +12,8 @@ import { ThemedText } from "@/components/ui/ThemedText";
 import { ThemedView } from "@/components/ui/ThemedView";
 import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/useTheme";
-import { api, type Holding, type Portfolio } from "@/lib/api";
+import { usePortfolioStore } from "@/stores/portfolio-store";
+import type { Holding } from "@/lib/api";
 
 function formatCurrency(value: number): string {
   return "$" + value.toLocaleString("en-US", {
@@ -23,37 +24,23 @@ function formatCurrency(value: number): string {
 
 export default function HomeScreen() {
   const { colors } = useTheme();
-  const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-
-  const fetchPortfolio = useCallback(async () => {
-    try {
-      const data = await api.getPortfolio();
-      setPortfolio(data);
-    } catch {
-      // silently fail, user sees empty state
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
+  const { balance, holdings, loading, refreshing, fetchPortfolio, refreshPortfolio } =
+    usePortfolioStore();
 
   useEffect(() => {
     fetchPortfolio();
   }, [fetchPortfolio]);
 
-  const onRefresh = () => {
-    setRefreshing(true);
-    fetchPortfolio();
-  };
+  const onRefresh = useCallback(() => {
+    refreshPortfolio();
+  }, [refreshPortfolio]);
 
-  const totalInvested = portfolio?.holdings.reduce(
+  const totalInvested = holdings.reduce(
     (sum, h) => sum + h.quantity * h.avg_buy_price,
     0,
-  ) ?? 0;
+  );
 
-  const totalValue = (portfolio?.balance ?? 0) + totalInvested;
+  const totalValue = balance + totalInvested;
 
   if (loading) {
     return (
@@ -93,7 +80,7 @@ export default function HomeScreen() {
                   Cash Available
                 </ThemedText>
                 <ThemedText type="default">
-                  {formatCurrency(portfolio?.balance ?? 0)}
+                  {formatCurrency(balance)}
                 </ThemedText>
               </View>
               <View style={styles.balanceItem}>
@@ -112,14 +99,14 @@ export default function HomeScreen() {
             Holdings
           </ThemedText>
 
-          {(!portfolio?.holdings || portfolio.holdings.length === 0) ? (
+          {holdings.length === 0 ? (
             <ThemedView type="backgroundElement" style={styles.emptyCard}>
               <ThemedText type="small" themeColor="textSecondary" style={styles.emptyText}>
                 No holdings yet. Go to Explore to start trading!
               </ThemedText>
             </ThemedView>
           ) : (
-            portfolio.holdings.map((holding: Holding) => (
+            holdings.map((holding: Holding) => (
               <HoldingRow key={holding.id} holding={holding} colors={colors} />
             ))
           )}

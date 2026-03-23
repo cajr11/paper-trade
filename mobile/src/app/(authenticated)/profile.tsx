@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -13,7 +13,7 @@ import { ThemedText } from "@/components/ui/ThemedText";
 import { ThemedView } from "@/components/ui/ThemedView";
 import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/useTheme";
-import { api, type UserProfile } from "@/lib/api";
+import { useUserStore } from "@/stores/user-store";
 import { useSession } from "@/providers/SessionProvider";
 
 function formatCurrency(value: number): string {
@@ -26,19 +26,7 @@ function formatCurrency(value: number): string {
 export default function Profile() {
   const { colors } = useTheme();
   const { logout } = useSession();
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  const fetchUser = useCallback(async () => {
-    try {
-      const data = await api.getMe();
-      setUser(data);
-    } catch {
-      // silent
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const { user, loading, fetchUser, clearUser } = useUserStore();
 
   useEffect(() => {
     fetchUser();
@@ -50,7 +38,10 @@ export default function Profile() {
       {
         text: "Log Out",
         style: "destructive",
-        onPress: () => logout(),
+        onPress: () => {
+          clearUser();
+          logout();
+        },
       },
     ]);
   };

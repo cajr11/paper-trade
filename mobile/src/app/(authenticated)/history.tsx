@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -12,7 +12,8 @@ import { ThemedText } from "@/components/ui/ThemedText";
 import { ThemedView } from "@/components/ui/ThemedView";
 import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/useTheme";
-import { api, type Trade } from "@/lib/api";
+import { useTradeStore } from "@/stores/trade-store";
+import type { Trade } from "@/lib/api";
 
 function formatCurrency(value: number): string {
   if (value >= 1) {
@@ -37,30 +38,16 @@ function formatDate(dateString: string): string {
 
 export default function History() {
   const { colors } = useTheme();
-  const [trades, setTrades] = useState<Trade[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-
-  const fetchTrades = useCallback(async () => {
-    try {
-      const data = await api.getTradeHistory(50, 0);
-      setTrades(data);
-    } catch {
-      // silent
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
+  const { trades, loading, refreshing, fetchTrades, refreshTrades } =
+    useTradeStore();
 
   useEffect(() => {
     fetchTrades();
   }, [fetchTrades]);
 
-  const onRefresh = () => {
-    setRefreshing(true);
-    fetchTrades();
-  };
+  const onRefresh = useCallback(() => {
+    refreshTrades();
+  }, [refreshTrades]);
 
   const renderTrade = ({ item }: { item: Trade }) => {
     const isBuy = item.side === "buy";

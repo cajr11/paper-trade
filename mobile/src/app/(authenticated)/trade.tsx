@@ -19,6 +19,9 @@ import CustomButton from "@/components/ui/CustomButton";
 import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/useTheme";
 import { api, ApiError, type PriceEntry } from "@/lib/api";
+import { usePortfolioStore } from "@/stores/portfolio-store";
+import { useTradeStore } from "@/stores/trade-store";
+import { useWatchlistStore } from "@/stores/watchlist-store";
 
 type Side = "buy" | "sell";
 
@@ -30,7 +33,12 @@ export default function Trade() {
     baseAsset: string;
   }>();
 
+  const { fetchPortfolio } = usePortfolioStore();
+  const { fetchTrades } = useTradeStore();
+  const { isWatched, addItem, removeItem, fetchWatchlist } = useWatchlistStore();
+
   const [price, setPrice] = useState<PriceEntry | null>(null);
+  const watched = symbol ? isWatched(symbol) : false;
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [side, setSide] = useState<Side>("buy");
@@ -50,9 +58,10 @@ export default function Trade() {
 
   useEffect(() => {
     fetchPrice();
+    fetchWatchlist();
     const interval = setInterval(fetchPrice, 10000);
     return () => clearInterval(interval);
-  }, [fetchPrice]);
+  }, [fetchPrice, fetchWatchlist]);
 
   const total = price && quantity ? price.price * parseFloat(quantity || "0") : 0;
 
@@ -72,6 +81,9 @@ export default function Trade() {
         quantity: parseFloat(quantity),
         price: price.price,
       });
+      // Refresh stores so other screens reflect the trade
+      fetchPortfolio();
+      fetchTrades();
       Alert.alert(
         "Trade Executed",
         `Successfully ${side === "buy" ? "bought" : "sold"} ${quantity} ${baseAsset}`,
@@ -124,12 +136,38 @@ export default function Trade() {
 
             {/* Coin Header */}
             <View style={styles.coinHeader}>
-              <ThemedText type="subtitle" style={styles.coinName}>
-                {baseAsset}
-              </ThemedText>
-              <ThemedText type="small" themeColor="textSecondary">
-                {symbol}
-              </ThemedText>
+              <View style={styles.coinHeaderRow}>
+                <View>
+                  <ThemedText type="subtitle" style={styles.coinName}>
+                    {baseAsset}
+                  </ThemedText>
+                  <ThemedText type="small" themeColor="textSecondary">
+                    {symbol}
+                  </ThemedText>
+                </View>
+                <Pressable
+                  onPress={async () => {
+                    if (!symbol || !baseAsset) return;
+                    try {
+                      if (watched) {
+                        await removeItem(symbol);
+                      } else {
+                        await addItem(symbol, baseAsset);
+                      }
+                    } catch {
+                      Alert.alert("Error", "Failed to update watchlist");
+                    }
+                  }}
+                  style={[
+                    styles.watchlistButton,
+                    { backgroundColor: colors.backgroundElement },
+                  ]}
+                >
+                  <ThemedText type="small" style={{ fontWeight: "600" }}>
+                    {watched ? "Watching" : "Watch"}
+                  </ThemedText>
+                </Pressable>
+              </View>
             </View>
 
             {/* Price Display */}
@@ -262,8 +300,18 @@ const styles = StyleSheet.create({
     marginTop: Spacing.three,
     marginBottom: Spacing.four,
   },
+  coinHeaderRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+  },
   coinName: {
     marginBottom: 4,
+  },
+  watchlistButton: {
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two,
+    borderRadius: 10,
   },
   priceCard: {
     padding: Spacing.four,

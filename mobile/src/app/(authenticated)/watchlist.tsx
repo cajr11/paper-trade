@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -15,35 +15,22 @@ import { ThemedText } from "@/components/ui/ThemedText";
 import { ThemedView } from "@/components/ui/ThemedView";
 import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/useTheme";
-import { api, type WatchlistItem } from "@/lib/api";
+import { useWatchlistStore } from "@/stores/watchlist-store";
+import type { WatchlistItem } from "@/lib/api";
 
 export default function Watchlist() {
   const { colors } = useTheme();
   const router = useRouter();
-  const [items, setItems] = useState<WatchlistItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-
-  const fetchWatchlist = useCallback(async () => {
-    try {
-      const data = await api.getWatchlist();
-      setItems(data);
-    } catch {
-      // silent
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
+  const { items, loading, refreshing, fetchWatchlist, refreshWatchlist, removeItem } =
+    useWatchlistStore();
 
   useEffect(() => {
     fetchWatchlist();
   }, [fetchWatchlist]);
 
-  const onRefresh = () => {
-    setRefreshing(true);
-    fetchWatchlist();
-  };
+  const onRefresh = useCallback(() => {
+    refreshWatchlist();
+  }, [refreshWatchlist]);
 
   const handleRemove = (symbol: string, baseAsset: string) => {
     Alert.alert(
@@ -56,8 +43,7 @@ export default function Watchlist() {
           style: "destructive",
           onPress: async () => {
             try {
-              await api.removeFromWatchlist(symbol);
-              setItems((prev) => prev.filter((i) => i.symbol !== symbol));
+              await removeItem(symbol);
             } catch {
               Alert.alert("Error", "Failed to remove from watchlist");
             }
