@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/cajr11/paper-trade/backend/internal/auth"
 	"github.com/cajr11/paper-trade/backend/internal/health"
 	"github.com/cajr11/paper-trade/backend/internal/store"
 	"github.com/cajr11/paper-trade/backend/internal/tickers"
@@ -38,9 +39,17 @@ func (app *application) mount() http.Handler {
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(60 * time.Second))
 
+	// Initialize auth
+	authService := auth.NewAuthService(app.store.User)
+	authHandler := auth.NewAuthHandler(authService)
+
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Get("/health", health.HandleHealthCheck)
 		r.Get("/tickers", tickers.HandleGetAllPairs)
+
+		// Auth routes (public)
+		r.Post("/auth/signup", authHandler.HandleSignup)
+		r.Post("/auth/login", authHandler.HandleLogin)
 	})
 
 	return r
