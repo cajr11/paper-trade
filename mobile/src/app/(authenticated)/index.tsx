@@ -1,6 +1,5 @@
 import { useCallback, useEffect } from "react";
 import {
-  ActivityIndicator,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -10,6 +9,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ThemedText } from "@/components/ui/ThemedText";
 import { ThemedView } from "@/components/ui/ThemedView";
+import ErrorState from "@/components/ui/ErrorState";
+import { CardSkeleton, ListSkeleton } from "@/components/ui/Skeleton";
 import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/useTheme";
 import { usePortfolioStore } from "@/stores/portfolio-store";
@@ -24,8 +25,15 @@ function formatCurrency(value: number): string {
 
 export default function HomeScreen() {
   const { colors } = useTheme();
-  const { balance, holdings, loading, refreshing, fetchPortfolio, refreshPortfolio } =
-    usePortfolioStore();
+  const {
+    balance,
+    holdings,
+    loading,
+    refreshing,
+    error,
+    fetchPortfolio,
+    refreshPortfolio,
+  } = usePortfolioStore();
 
   useEffect(() => {
     fetchPortfolio();
@@ -44,10 +52,24 @@ export default function HomeScreen() {
 
   if (loading) {
     return (
-      <ThemedView style={styles.centered}>
-        <ActivityIndicator size="large" />
+      <ThemedView style={styles.container}>
+        <SafeAreaView style={styles.safeArea}>
+          <ScrollView contentContainerStyle={styles.scrollContent}>
+            <ThemedText type="subtitle" style={styles.header}>
+              Dashboard
+            </ThemedText>
+            <CardSkeleton />
+            <View style={{ marginTop: Spacing.four }}>
+              <ListSkeleton count={3} />
+            </View>
+          </ScrollView>
+        </SafeAreaView>
       </ThemedView>
     );
+  }
+
+  if (error && holdings.length === 0) {
+    return <ErrorState message={error} onRetry={fetchPortfolio} />;
   }
 
   return (
@@ -150,11 +172,6 @@ const styles = StyleSheet.create({
   },
   safeArea: {
     flex: 1,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
   },
   scrollView: {
     flex: 1,

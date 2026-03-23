@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   FlatList,
   Pressable,
   StyleSheet,
@@ -12,6 +11,7 @@ import { useRouter } from "expo-router";
 
 import { ThemedText } from "@/components/ui/ThemedText";
 import { ThemedView } from "@/components/ui/ThemedView";
+import { ListSkeleton } from "@/components/ui/Skeleton";
 import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/useTheme";
 import { api, type Ticker } from "@/lib/api";
@@ -90,8 +90,15 @@ export default function Explore() {
 
   if (loading) {
     return (
-      <ThemedView style={styles.centered}>
-        <ActivityIndicator size="large" />
+      <ThemedView style={styles.container}>
+        <SafeAreaView style={styles.safeArea}>
+          <ThemedText type="subtitle" style={styles.header}>
+            Explore
+          </ThemedText>
+          <View style={styles.listContent}>
+            <ListSkeleton count={8} />
+          </View>
+        </SafeAreaView>
       </ThemedView>
     );
   }
