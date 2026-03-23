@@ -8,7 +8,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
+import { useNavigation, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 
 import CoinIcon, { getCoinName } from "@/components/ui/CoinIcon";
@@ -46,14 +46,25 @@ export default function HomeScreen() {
   } = usePortfolioStore();
   const { unreadCount, fetchUnreadCount } = useNotificationStore();
 
+  const navigation = useNavigation();
+
   useEffect(() => {
     fetchPortfolio();
     fetchUnreadCount();
   }, [fetchPortfolio, fetchUnreadCount]);
 
+  // Refresh unread count when screen gains focus (e.g. returning from notifications)
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("focus", () => {
+      fetchUnreadCount();
+    });
+    return unsubscribe;
+  }, [navigation, fetchUnreadCount]);
+
   const onRefresh = useCallback(() => {
     refreshPortfolio();
-  }, [refreshPortfolio]);
+    fetchUnreadCount();
+  }, [refreshPortfolio, fetchUnreadCount]);
 
   // Cost basis: what user paid for holdings
   const totalCostBasis = holdings.reduce(

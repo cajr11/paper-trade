@@ -20,6 +20,7 @@ import PriceChart from "@/components/ui/PriceChart";
 import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/useTheme";
 import { api, ApiError, type PriceEntry } from "@/lib/api";
+import { useNotificationStore } from "@/stores/notification-store";
 import { usePortfolioStore } from "@/stores/portfolio-store";
 import { useTradeStore } from "@/stores/trade-store";
 import { useUserStore } from "@/stores/user-store";
@@ -43,6 +44,7 @@ export default function Trade() {
   const { balance, fetchPortfolio } = usePortfolioStore();
   const { fetchTrades } = useTradeStore();
   const { fetchUser } = useUserStore();
+  const { fetchUnreadCount } = useNotificationStore();
   const { isWatched, addItem, removeItem, fetchWatchlist } = useWatchlistStore();
 
   const [price, setPrice] = useState<PriceEntry | null>(null);
@@ -98,6 +100,7 @@ export default function Trade() {
       fetchPortfolio();
       fetchTrades();
       fetchUser();
+      fetchUnreadCount();
       Alert.alert(
         "Trade Executed",
         `Successfully ${side === "buy" ? "bought" : "sold"} ${quantity.toFixed(6)} ${baseAsset}`,
