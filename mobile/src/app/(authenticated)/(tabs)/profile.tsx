@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -9,6 +9,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useNavigation } from "expo-router";
 
 import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/useTheme";
@@ -27,9 +28,19 @@ export default function Profile() {
   const { colors } = useTheme();
   const { user, loading, fetchUser, clearUser } = useUserStore();
 
+  const navigation = useNavigation();
+
   useEffect(() => {
     fetchUser();
   }, [fetchUser]);
+
+  // Re-fetch user data when the screen gains focus (e.g. after a trade)
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("focus", () => {
+      fetchUser();
+    });
+    return unsubscribe;
+  }, [navigation, fetchUser]);
 
   const handleLogout = () => {
     Alert.alert("Log Out", "Are you sure you want to log out?", [
