@@ -69,6 +69,8 @@ export type UserProfile = {
   id: string;
   email: string;
   full_name: string;
+  username: string | null;
+  phone: string | null;
   balance: number;
 };
 
@@ -155,6 +157,20 @@ export const api = {
 
   getMe: () =>
     request<UserProfile>("/me", { authenticated: true }),
+
+  updateProfile: (data: { full_name: string; email: string; username?: string | null; phone?: string | null }) =>
+    request<UserProfile>("/me", {
+      method: "PATCH",
+      body: data,
+      authenticated: true,
+    }),
+
+  changePassword: (currentPassword: string, newPassword: string) =>
+    request<{ message: string }>("/me/password", {
+      method: "PATCH",
+      body: { current_password: currentPassword, new_password: newPassword },
+      authenticated: true,
+    }),
 
   // Portfolio
   getPortfolio: () =>
