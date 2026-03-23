@@ -116,6 +116,16 @@ export type Ticker = {
   baseAssetIconUrl: string;
 };
 
+export type Notification = {
+  id: string;
+  user_id: string;
+  type: "order_filled" | "price_alert" | "new_listing" | "system";
+  title: string;
+  body: string;
+  read: boolean;
+  created_at: string;
+};
+
 export type PriceEntry = {
   symbol: string;
   price: number;
@@ -197,6 +207,23 @@ export const api = {
 
   get24hrTickers: () =>
     request<Record<string, Ticker24hr>>("/tickers/24hr"),
+
+  // Notifications
+  getNotifications: (limit = 50, offset = 0) =>
+    request<Notification[]>(`/notifications?limit=${limit}&offset=${offset}`, {
+      authenticated: true,
+    }),
+
+  markNotificationRead: (id: string) =>
+    request<{ message: string }>(`/notifications/${id}/read`, {
+      method: "PATCH",
+      authenticated: true,
+    }),
+
+  getUnreadCount: () =>
+    request<{ count: number }>("/notifications/unread-count", {
+      authenticated: true,
+    }),
 };
 
 export { ApiError };
