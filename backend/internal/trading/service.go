@@ -25,18 +25,20 @@ type TradeRequest struct {
 }
 
 type TradingService struct {
-	db           *sql.DB
-	userStore    *store.UserStore
-	holdingStore *store.HoldingStore
-	tradeStore   *store.TradeStore
+	db                *sql.DB
+	userStore         *store.UserStore
+	holdingStore      *store.HoldingStore
+	tradeStore        *store.TradeStore
+	notificationStore *store.NotificationStore
 }
 
-func NewTradingService(db *sql.DB, userStore *store.UserStore, holdingStore *store.HoldingStore, tradeStore *store.TradeStore) *TradingService {
+func NewTradingService(db *sql.DB, userStore *store.UserStore, holdingStore *store.HoldingStore, tradeStore *store.TradeStore, notificationStore *store.NotificationStore) *TradingService {
 	return &TradingService{
-		db:           db,
-		userStore:    userStore,
-		holdingStore: holdingStore,
-		tradeStore:   tradeStore,
+		db:                db,
+		userStore:         userStore,
+		holdingStore:      holdingStore,
+		tradeStore:        tradeStore,
+		notificationStore: notificationStore,
 	}
 }
 

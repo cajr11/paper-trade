@@ -8,6 +8,7 @@ import (
 	"github.com/cajr11/paper-trade/backend/internal/auth"
 	"github.com/cajr11/paper-trade/backend/internal/health"
 	appMiddleware "github.com/cajr11/paper-trade/backend/internal/middleware"
+	"github.com/cajr11/paper-trade/backend/internal/notifications"
 	"github.com/cajr11/paper-trade/backend/internal/store"
 	"github.com/cajr11/paper-trade/backend/internal/tickers"
 	"github.com/cajr11/paper-trade/backend/internal/trading"
@@ -46,9 +47,10 @@ func (app *application) mount() http.Handler {
 	// Initialize services and handlers
 	authService := auth.NewAuthService(app.store.User)
 	authHandler := auth.NewAuthHandler(authService)
-	tradingService := trading.NewTradingService(app.store.DB, app.store.User, app.store.Holding, app.store.Trade)
+	tradingService := trading.NewTradingService(app.store.DB, app.store.User, app.store.Holding, app.store.Trade, app.store.Notification)
 	tradingHandler := trading.NewTradingHandler(tradingService, app.store.Holding, app.store.Trade, app.store.User)
 	watchlistHandler := watchlist.NewWatchlistHandler(app.store.Watchlist)
+	notificationHandler := notifications.NewNotificationHandler(app.store.Notification)
 
 	r.Route("/api/v1", func(r chi.Router) {
 		// Public routes
@@ -78,6 +80,11 @@ func (app *application) mount() http.Handler {
 			r.Get("/watchlist", watchlistHandler.HandleGetWatchlist)
 			r.Post("/watchlist", watchlistHandler.HandleAddToWatchlist)
 			r.Delete("/watchlist", watchlistHandler.HandleRemoveFromWatchlist)
+
+			// Notifications
+			r.Get("/notifications", notificationHandler.HandleGetNotifications)
+			r.Patch("/notifications/{id}/read", notificationHandler.HandleMarkAsRead)
+			r.Get("/notifications/unread-count", notificationHandler.HandleGetUnreadCount)
 		})
 	})
 
