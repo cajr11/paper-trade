@@ -56,13 +56,18 @@ export default function AppTabs() {
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="profile">
-        <NativeTabs.Trigger.Label>Person</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Label>Profile</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
           sf={{
             default: "person",
             selected: "person.fill",
           }}
         />
+      </NativeTabs.Trigger>
+
+      {/* Hidden from tab bar - accessed via navigation */}
+      <NativeTabs.Trigger name="trade" hidden>
+        <NativeTabs.Trigger.Label>Trade</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
     </NativeTabs>
   );
