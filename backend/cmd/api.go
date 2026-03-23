@@ -56,6 +56,7 @@ func (app *application) mount() http.Handler {
 		r.Get("/tickers", tickers.HandleGetAllPairs)
 		r.Get("/tickers/price", tickers.HandleGetPrice)
 		r.Get("/tickers/prices", tickers.HandleGetPrices)
+		r.Get("/tickers/24hr", tickers.HandleGet24hrTickers)
 		r.Post("/auth/signup", authHandler.HandleSignup)
 		r.Post("/auth/login", authHandler.HandleLogin)
 

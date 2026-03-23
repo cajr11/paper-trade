@@ -15,7 +15,7 @@ import CoinIcon, { getCoinName } from "@/components/ui/CoinIcon";
 import { ListSkeleton } from "@/components/ui/Skeleton";
 import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/useTheme";
-import { api, type Ticker } from "@/lib/api";
+import { api, type Ticker, type Ticker24hr } from "@/lib/api";
 
 type FilterOption = "All" | "Top Gainers" | "Top Losers" | "New";
 const FILTERS: FilterOption[] = ["All", "Top Gainers", "Top Losers", "New"];
@@ -24,6 +24,7 @@ export default function Explore() {
   const router = useRouter();
   const { colors } = useTheme();
   const [tickers, setTickers] = useState<Ticker[]>([]);
+  const [tickerData, setTickerData] = useState<Record<string, Ticker24hr>>({});
   const [filtered, setFiltered] = useState<Ticker[]>([]);
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState<FilterOption>("All");
@@ -31,8 +32,12 @@ export default function Explore() {
 
   const fetchTickers = useCallback(async () => {
     try {
-      const data = await api.getTickers();
+      const [data, data24hr] = await Promise.all([
+        api.getTickers(),
+        api.get24hrTickers(),
+      ]);
       setTickers(data);
+      setTickerData(data24hr);
       setFiltered(data);
     } catch {
       // silent fail
@@ -48,6 +53,7 @@ export default function Explore() {
   useEffect(() => {
     let result = tickers;
 
+    // Apply search filter
     if (search.trim()) {
       const query = search.toLowerCase();
       result = result.filter(
@@ -58,8 +64,40 @@ export default function Explore() {
       );
     }
 
+    // Apply category filter
+    if (activeFilter === "Top Gainers") {
+      result = result
+        .filter((t) => {
+          const data = tickerData[t.symbol];
+          return data && data.priceChangePercent > 0;
+        })
+        .sort((a, b) => {
+          const aChange = tickerData[a.symbol]?.priceChangePercent ?? 0;
+          const bChange = tickerData[b.symbol]?.priceChangePercent ?? 0;
+          return bChange - aChange;
+        });
+    } else if (activeFilter === "Top Losers") {
+      result = result
+        .filter((t) => {
+          const data = tickerData[t.symbol];
+          return data && data.priceChangePercent < 0;
+        })
+        .sort((a, b) => {
+          const aChange = tickerData[a.symbol]?.priceChangePercent ?? 0;
+          const bChange = tickerData[b.symbol]?.priceChangePercent ?? 0;
+          return aChange - bChange;
+        });
+    } else if (activeFilter === "New") {
+      // Sort by lowest volume as a proxy for newer/less established tokens
+      result = [...result].sort((a, b) => {
+        const aVol = tickerData[a.symbol]?.volume ?? Infinity;
+        const bVol = tickerData[b.symbol]?.volume ?? Infinity;
+        return aVol - bVol;
+      });
+    }
+
     setFiltered(result);
-  }, [search, tickers, activeFilter]);
+  }, [search, tickers, activeFilter, tickerData]);
 
   const handleTickerPress = (ticker: Ticker) => {
     router.push({
@@ -73,6 +111,11 @@ export default function Explore() {
 
   const renderTicker = ({ item }: { item: Ticker }) => {
     const coinName = getCoinName(item.baseAsset);
+    const data = tickerData[item.symbol];
+    const changePercent = data?.priceChangePercent ?? 0;
+    const lastPrice = data?.lastPrice;
+    const changeSign = changePercent >= 0 ? "+" : "";
+    const changeColor = changePercent >= 0 ? colors.gain : colors.loss;
 
     return (
       <Pressable
@@ -89,7 +132,18 @@ export default function Explore() {
           <Text style={[styles.tickerSymbol, { color: colors.secondaryText }]}>{item.baseAsset}/USDT</Text>
         </View>
         <View style={styles.tickerRight}>
-          <Text style={[styles.tickerPair, { color: colors.text }]}>{item.baseAsset}/USDT</Text>
+          {lastPrice != null ? (
+            <>
+              <Text style={[styles.tickerPrice, { color: colors.text }]}>
+                ${lastPrice >= 1 ? lastPrice.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : lastPrice.toFixed(6)}
+              </Text>
+              <Text style={[styles.tickerChange, { color: changeColor }]}>
+                {changeSign}{changePercent.toFixed(2)}%
+              </Text>
+            </>
+          ) : (
+            <Text style={[styles.tickerPrice, { color: colors.text }]}>{item.baseAsset}/USDT</Text>
+          )}
         </View>
       </Pressable>
     );
@@ -270,10 +324,16 @@ const styles = StyleSheet.create({
   },
   tickerRight: {
     alignItems: "flex-end",
+    gap: 2,
   },
-  tickerPair: {
+  tickerPrice: {
     fontSize: 14,
     fontWeight: "600",
+    fontFamily: "Outfit",
+  },
+  tickerChange: {
+    fontSize: 13,
+    fontWeight: "500",
     fontFamily: "Outfit",
   },
   emptyCard: {

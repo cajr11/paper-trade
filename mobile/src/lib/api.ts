@@ -121,6 +121,13 @@ export type PriceEntry = {
   price: number;
 };
 
+export type Ticker24hr = {
+  symbol: string;
+  priceChangePercent: number;
+  lastPrice: number;
+  volume: number;
+};
+
 // API functions
 export const api = {
   // Auth
@@ -187,6 +194,9 @@ export const api = {
 
   getPrices: (symbols: string[]) =>
     request<Record<string, number>>(`/tickers/prices?symbols=${symbols.join(",")}`),
+
+  get24hrTickers: () =>
+    request<Record<string, Ticker24hr>>("/tickers/24hr"),
 };
 
 export { ApiError };

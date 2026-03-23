@@ -132,6 +132,68 @@ func GetPrices(symbols []string) (map[string]float64, error) {
 	return result, nil
 }
 
+type Ticker24hr struct {
+	Symbol             string  `json:"symbol"`
+	PriceChangePercent float64 `json:"priceChangePercent"`
+	LastPrice          float64 `json:"lastPrice"`
+	Volume             float64 `json:"volume"`
+}
+
+type binance24hrTicker struct {
+	Symbol             string `json:"symbol"`
+	PriceChangePercent string `json:"priceChangePercent"`
+	LastPrice          string `json:"lastPrice"`
+	Volume             string `json:"volume"`
+}
+
+func HandleGet24hrTickers(w http.ResponseWriter, r *http.Request) {
+	url := "https://api.binance.com/api/v3/ticker/24hr"
+	resp, err := http.Get(url)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"error": "failed to fetch 24hr tickers"})
+		return
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"error": "failed to read response"})
+		return
+	}
+
+	var rawTickers []binance24hrTicker
+	if err := json.Unmarshal(body, &rawTickers); err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"error": "failed to parse tickers"})
+		return
+	}
+
+	// Filter for USDT pairs and convert
+	result := make(map[string]Ticker24hr)
+	for _, t := range rawTickers {
+		if !strings.HasSuffix(t.Symbol, "USDT") {
+			continue
+		}
+		pcp, _ := strconv.ParseFloat(t.PriceChangePercent, 64)
+		lp, _ := strconv.ParseFloat(t.LastPrice, 64)
+		vol, _ := strconv.ParseFloat(t.Volume, 64)
+		result[t.Symbol] = Ticker24hr{
+			Symbol:             t.Symbol,
+			PriceChangePercent: pcp,
+			LastPrice:          lp,
+			Volume:             vol,
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(result)
+}
+
 func HandleGetPrices(w http.ResponseWriter, r *http.Request) {
 	symbolsParam := r.URL.Query().Get("symbols")
 	if symbolsParam == "" {
