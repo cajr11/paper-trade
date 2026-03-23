@@ -9,12 +9,14 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
 import CoinIcon, { getCoinName } from "@/components/ui/CoinIcon";
+import PriceChart from "@/components/ui/PriceChart";
 import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/useTheme";
 import { api, ApiError, type PriceEntry } from "@/lib/api";
@@ -30,6 +32,8 @@ const TIME_PERIODS = ["1D", "1W", "1M", "1Y"] as const;
 export default function Trade() {
   const router = useRouter();
   const { colors } = useTheme();
+  const { width: screenWidth } = useWindowDimensions();
+  const chartWidth = screenWidth - Spacing.four * 2; // account for horizontal padding
   const { symbol, baseAsset } = useLocalSearchParams<{
     symbol: string;
     baseAsset: string;
@@ -313,10 +317,16 @@ export default function Trade() {
           </Text>
           <Text style={styles.priceChange}>+2.4% today</Text>
 
-          {/* Chart Placeholder */}
+          {/* Price Chart */}
           <View style={[styles.chartArea, { backgroundColor: colors.card }]}>
-            <View style={styles.chartGreenFill} />
-            <View style={styles.chartLineGreen} />
+            {symbol && (
+              <PriceChart
+                symbol={symbol}
+                period={activeTimePeriod as "1D" | "1W" | "1M" | "1Y"}
+                width={chartWidth}
+                height={180}
+              />
+            )}
           </View>
 
           {/* Time Period Pills */}
@@ -491,28 +501,13 @@ const styles = StyleSheet.create({
     height: 180,
     marginBottom: Spacing.three,
     overflow: "hidden",
-    justifyContent: "flex-end",
+    justifyContent: "center",
+    alignItems: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 8,
     elevation: 2,
-  },
-  chartGreenFill: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: "40%",
-    backgroundColor: "rgba(34, 197, 94, 0.08)",
-  },
-  chartLineGreen: {
-    position: "absolute",
-    bottom: "40%",
-    left: 0,
-    right: 0,
-    height: 2,
-    backgroundColor: "#22C55E",
   },
 
   // Time Periods
