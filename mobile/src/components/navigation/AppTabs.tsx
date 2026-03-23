@@ -22,11 +22,11 @@ export default function AppTabs() {
       }}
     >
       <NativeTabs.Trigger name="index">
-        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Label>Portfolio</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
           sf={{
-            default: "house",
-            selected: "house.fill",
+            default: "square.grid.2x2",
+            selected: "square.grid.2x2.fill",
           }}
           renderingMode="template"
         />
@@ -36,8 +36,8 @@ export default function AppTabs() {
         <NativeTabs.Trigger.Label>Explore</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
           sf={{
-            default: "safari",
-            selected: "safari.fill",
+            default: "magnifyingglass",
+            selected: "magnifyingglass",
           }}
           renderingMode="template"
         />
