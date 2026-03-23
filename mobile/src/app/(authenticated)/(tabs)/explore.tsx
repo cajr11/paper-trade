@@ -15,11 +15,15 @@ import { ListSkeleton } from "@/components/ui/Skeleton";
 import { Spacing } from "@/constants/theme";
 import { api, type Ticker } from "@/lib/api";
 
+type FilterOption = "All" | "Top Gainers" | "Top Losers" | "New";
+const FILTERS: FilterOption[] = ["All", "Top Gainers", "Top Losers", "New"];
+
 export default function Explore() {
   const router = useRouter();
   const [tickers, setTickers] = useState<Ticker[]>([]);
   const [filtered, setFiltered] = useState<Ticker[]>([]);
   const [search, setSearch] = useState("");
+  const [activeFilter, setActiveFilter] = useState<FilterOption>("All");
   const [loading, setLoading] = useState(true);
 
   const fetchTickers = useCallback(async () => {
@@ -39,19 +43,20 @@ export default function Explore() {
   }, [fetchTickers]);
 
   useEffect(() => {
-    if (!search.trim()) {
-      setFiltered(tickers);
-      return;
-    }
-    const query = search.toLowerCase();
-    setFiltered(
-      tickers.filter(
+    let result = tickers;
+
+    if (search.trim()) {
+      const query = search.toLowerCase();
+      result = result.filter(
         (t) =>
           t.baseAsset.toLowerCase().includes(query) ||
-          t.symbol.toLowerCase().includes(query),
-      ),
-    );
-  }, [search, tickers]);
+          t.symbol.toLowerCase().includes(query) ||
+          getCoinName(t.baseAsset).toLowerCase().includes(query),
+      );
+    }
+
+    setFiltered(result);
+  }, [search, tickers, activeFilter]);
 
   const handleTickerPress = (ticker: Ticker) => {
     router.push({
@@ -74,13 +79,13 @@ export default function Explore() {
           pressed && { opacity: 0.7 },
         ]}
       >
-        <CoinIcon symbol={item.baseAsset} size={44} />
+        <CoinIcon symbol={item.baseAsset} size={44} iconUrl={item.baseAssetIconUrl} />
         <View style={styles.tickerInfo}>
           <Text style={styles.tickerName}>{coinName}</Text>
           <Text style={styles.tickerSymbol}>{item.baseAsset}/USDT</Text>
         </View>
         <View style={styles.tickerRight}>
-          <Text style={styles.tickerPair}>{item.symbol}</Text>
+          <Text style={styles.tickerPair}>{item.baseAsset}/USDT</Text>
         </View>
       </Pressable>
     );
@@ -106,15 +111,45 @@ export default function Explore() {
 
         {/* Search Bar */}
         <View style={styles.searchContainer}>
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search tokens..."
-            placeholderTextColor="#A0A0A0"
-            value={search}
-            onChangeText={setSearch}
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
+          <View style={styles.searchInputWrapper}>
+            <Text style={styles.searchIcon}>&#128269;</Text>
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search coins..."
+              placeholderTextColor="#A0A0A0"
+              value={search}
+              onChangeText={setSearch}
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+          </View>
+        </View>
+
+        {/* Filter Pills */}
+        <View style={styles.filterContainer}>
+          {FILTERS.map((filter) => (
+            <Pressable
+              key={filter}
+              onPress={() => setActiveFilter(filter)}
+              style={[
+                styles.filterPill,
+                activeFilter === filter
+                  ? styles.filterPillActive
+                  : styles.filterPillInactive,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.filterText,
+                  {
+                    color: activeFilter === filter ? "#FFFFFF" : "#71717A",
+                  },
+                ]}
+              >
+                {filter}
+              </Text>
+            </Pressable>
+          ))}
         </View>
 
         {/* Ticker List */}
@@ -156,19 +191,56 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.four,
     marginBottom: Spacing.three,
   },
-  searchInput: {
-    height: 48,
+  searchInputWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
     borderRadius: 12,
     paddingHorizontal: Spacing.three,
-    fontSize: 16,
-    backgroundColor: "#FFFFFF",
-    color: "#000000",
-    fontFamily: "Outfit",
+    height: 48,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.04,
     shadowRadius: 4,
     elevation: 1,
+  },
+  searchIcon: {
+    fontSize: 16,
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: "#000000",
+    fontFamily: "Outfit",
+    height: 48,
+  },
+  filterContainer: {
+    flexDirection: "row",
+    paddingHorizontal: Spacing.four,
+    marginBottom: Spacing.three,
+    gap: 8,
+  },
+  filterPill: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  filterPillActive: {
+    backgroundColor: "#000000",
+  },
+  filterPillInactive: {
+    backgroundColor: "#FFFFFF",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  filterText: {
+    fontSize: 13,
+    fontWeight: "600",
+    fontFamily: "Outfit",
   },
   listContent: {
     paddingHorizontal: Spacing.four,
@@ -208,9 +280,9 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   tickerPair: {
-    fontSize: 13,
-    fontWeight: "500",
-    color: "#71717A",
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#000000",
     fontFamily: "Outfit",
   },
   emptyCard: {
