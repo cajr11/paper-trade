@@ -5,14 +5,12 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  Text,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { ThemedText } from "@/components/ui/ThemedText";
-import { ThemedView } from "@/components/ui/ThemedView";
 import { Spacing } from "@/constants/theme";
-import { useTheme } from "@/hooks/useTheme";
 import { useUserStore } from "@/stores/user-store";
 import { useSession } from "@/providers/SessionProvider";
 
@@ -24,7 +22,6 @@ function formatCurrency(value: number): string {
 }
 
 export default function Profile() {
-  const { colors } = useTheme();
   const { logout } = useSession();
   const { user, loading, fetchUser, clearUser } = useUserStore();
 
@@ -46,110 +43,78 @@ export default function Profile() {
     ]);
   };
 
+  const initials = user?.full_name
+    ?.split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase() ?? "?";
+
   if (loading) {
     return (
-      <ThemedView style={styles.centered}>
-        <ActivityIndicator size="large" />
-      </ThemedView>
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color="#000000" />
+      </View>
     );
   }
 
   return (
-    <ThemedView style={styles.container}>
+    <View style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          <ThemedText type="subtitle" style={styles.header}>
-            Profile
-          </ThemedText>
+          <Text style={styles.header}>Profile</Text>
 
           {/* User Info Card */}
-          <ThemedView type="backgroundElement" style={styles.userCard}>
-            <View style={styles.avatarContainer}>
-              <View
-                style={[
-                  styles.avatar,
-                  { backgroundColor: colors.backgroundSelected },
-                ]}
-              >
-                <ThemedText type="subtitle" style={styles.avatarText}>
-                  {user?.full_name
-                    ?.split(" ")
-                    .map((n) => n[0])
-                    .join("")
-                    .toUpperCase() ?? "?"}
-                </ThemedText>
-              </View>
+          <View style={styles.userCard}>
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>{initials}</Text>
             </View>
-            <ThemedText type="default" style={styles.userName}>
-              {user?.full_name ?? "Unknown"}
-            </ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
-              {user?.email ?? ""}
-            </ThemedText>
+            <Text style={styles.userName}>{user?.full_name ?? "Unknown"}</Text>
+            <Text style={styles.userEmail}>{user?.email ?? ""}</Text>
             <View style={styles.balanceContainer}>
-              <ThemedText type="small" themeColor="textSecondary">
-                Account Balance
-              </ThemedText>
-              <ThemedText type="default" style={styles.balanceValue}>
+              <Text style={styles.balanceLabel}>Account Balance</Text>
+              <Text style={styles.balanceValue}>
                 {formatCurrency(user?.balance ?? 0)}
-              </ThemedText>
+              </Text>
             </View>
-          </ThemedView>
+          </View>
 
           {/* Settings Menu */}
-          <ThemedView type="backgroundElement" style={styles.menuCard}>
-            <MenuItem label="Edit Profile" colors={colors} onPress={() => {}} />
-            <View style={[styles.divider, { backgroundColor: colors.background }]} />
-            <MenuItem
-              label="Security Settings"
-              colors={colors}
-              onPress={() => {}}
-            />
-            <View style={[styles.divider, { backgroundColor: colors.background }]} />
-            <MenuItem
-              label="Notification Settings"
-              colors={colors}
-              onPress={() => {}}
-            />
-            <View style={[styles.divider, { backgroundColor: colors.background }]} />
-            <MenuItem
-              label="Help & Support"
-              colors={colors}
-              onPress={() => {}}
-            />
-            <View style={[styles.divider, { backgroundColor: colors.background }]} />
-            <MenuItem label="FAQ" colors={colors} onPress={() => {}} />
-          </ThemedView>
+          <View style={styles.menuCard}>
+            <MenuItem label="Edit Profile" onPress={() => {}} />
+            <View style={styles.divider} />
+            <MenuItem label="Security" onPress={() => {}} />
+            <View style={styles.divider} />
+            <MenuItem label="Notification Settings" onPress={() => {}} />
+            <View style={styles.divider} />
+            <MenuItem label="Help & Support" onPress={() => {}} />
+            <View style={styles.divider} />
+            <MenuItem label="FAQ" onPress={() => {}} />
+          </View>
 
           {/* Logout */}
           <Pressable
             onPress={handleLogout}
             style={({ pressed }) => [
               styles.logoutButton,
-              { backgroundColor: colors.backgroundElement },
               pressed && { opacity: 0.7 },
             ]}
           >
-            <ThemedText type="default" style={styles.logoutText}>
-              Log Out
-            </ThemedText>
+            <Text style={styles.logoutText}>Log Out</Text>
           </Pressable>
         </ScrollView>
       </SafeAreaView>
-    </ThemedView>
+    </View>
   );
 }
 
 function MenuItem({
   label,
-  colors,
   onPress,
 }: {
   label: string;
-  colors: Record<string, string>;
   onPress: () => void;
 }) {
   return (
@@ -157,13 +122,11 @@ function MenuItem({
       onPress={onPress}
       style={({ pressed }) => [
         styles.menuItem,
-        pressed && { backgroundColor: colors.backgroundSelected },
+        pressed && { backgroundColor: "#F5F5F5" },
       ]}
     >
-      <ThemedText type="default">{label}</ThemedText>
-      <ThemedText type="small" themeColor="textSecondary">
-        {">"}
-      </ThemedText>
+      <Text style={styles.menuLabel}>{label}</Text>
+      <Text style={styles.chevron}>{"\u203A"}</Text>
     </Pressable>
   );
 }
@@ -171,6 +134,7 @@ function MenuItem({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#F5F5F5",
   },
   safeArea: {
     flex: 1,
@@ -179,73 +143,127 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#F5F5F5",
   },
   scrollContent: {
     paddingHorizontal: Spacing.four,
     paddingBottom: 100,
   },
   header: {
+    fontSize: 28,
+    fontWeight: "700",
+    color: "#000000",
     marginBottom: Spacing.four,
     marginTop: Spacing.three,
+    fontFamily: "Outfit",
   },
   userCard: {
+    backgroundColor: "#FFFFFF",
     padding: Spacing.four,
     borderRadius: 16,
     alignItems: "center",
-    gap: Spacing.one,
     marginBottom: Spacing.four,
-  },
-  avatarContainer: {
-    marginBottom: Spacing.two,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
   avatar: {
     width: 72,
     height: 72,
     borderRadius: 36,
+    backgroundColor: "#E0E1E6",
     justifyContent: "center",
     alignItems: "center",
+    marginBottom: 12,
   },
   avatarText: {
     fontSize: 24,
-    lineHeight: 32,
+    fontWeight: "700",
+    color: "#000000",
+    fontFamily: "Outfit",
   },
   userName: {
-    fontWeight: "700",
     fontSize: 18,
+    fontWeight: "700",
+    color: "#000000",
+    fontFamily: "Outfit",
+  },
+  userEmail: {
+    fontSize: 14,
+    fontWeight: "400",
+    color: "#71717A",
+    marginTop: 2,
+    fontFamily: "Outfit",
   },
   balanceContainer: {
     alignItems: "center",
     marginTop: Spacing.three,
     gap: 4,
   },
+  balanceLabel: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#71717A",
+    fontFamily: "Outfit",
+  },
   balanceValue: {
+    fontSize: 22,
     fontWeight: "700",
-    fontSize: 20,
+    color: "#000000",
+    fontFamily: "Outfit",
   },
   menuCard: {
+    backgroundColor: "#FFFFFF",
     borderRadius: 16,
     overflow: "hidden",
     marginBottom: Spacing.four,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
   menuItem: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: Spacing.three,
+    paddingHorizontal: Spacing.four,
     paddingVertical: Spacing.three,
+  },
+  menuLabel: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#000000",
+    fontFamily: "Outfit",
+  },
+  chevron: {
+    fontSize: 22,
+    fontWeight: "300",
+    color: "#A0A0A0",
   },
   divider: {
     height: 1,
-    marginHorizontal: Spacing.three,
+    backgroundColor: "#F0F0F3",
+    marginHorizontal: Spacing.four,
   },
   logoutButton: {
     height: 52,
     borderRadius: 12,
+    backgroundColor: "#FFFFFF",
     justifyContent: "center",
     alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
   logoutText: {
     color: "#EF4444",
     fontWeight: "700",
+    fontSize: 16,
+    fontFamily: "Outfit",
   },
 });
