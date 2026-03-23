@@ -7,17 +7,15 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  Text,
   TextInput,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
-import { ThemedText } from "@/components/ui/ThemedText";
-import { ThemedView } from "@/components/ui/ThemedView";
-import CustomButton from "@/components/ui/CustomButton";
+import CoinIcon, { getCoinName } from "@/components/ui/CoinIcon";
 import { Spacing } from "@/constants/theme";
-import { useTheme } from "@/hooks/useTheme";
 import { api, ApiError, type PriceEntry } from "@/lib/api";
 import { usePortfolioStore } from "@/stores/portfolio-store";
 import { useTradeStore } from "@/stores/trade-store";
@@ -26,7 +24,6 @@ import { useWatchlistStore } from "@/stores/watchlist-store";
 type Side = "buy" | "sell";
 
 export default function Trade() {
-  const { colors } = useTheme();
   const router = useRouter();
   const { symbol, baseAsset } = useLocalSearchParams<{
     symbol: string;
@@ -43,6 +40,8 @@ export default function Trade() {
   const [submitting, setSubmitting] = useState(false);
   const [side, setSide] = useState<Side>("buy");
   const [quantity, setQuantity] = useState("");
+
+  const coinName = baseAsset ? getCoinName(baseAsset) : "";
 
   const fetchPrice = useCallback(async () => {
     if (!symbol) return;
@@ -81,7 +80,6 @@ export default function Trade() {
         quantity: parseFloat(quantity),
         price: price.price,
       });
-      // Refresh stores so other screens reflect the trade
       fetchPortfolio();
       fetchTrades();
       Alert.alert(
@@ -110,16 +108,29 @@ export default function Trade() {
     return "$" + value.toFixed(6);
   };
 
+  const handleWatchlistToggle = async () => {
+    if (!symbol || !baseAsset) return;
+    try {
+      if (watched) {
+        await removeItem(symbol);
+      } else {
+        await addItem(symbol, baseAsset);
+      }
+    } catch {
+      Alert.alert("Error", "Failed to update watchlist");
+    }
+  };
+
   if (loading) {
     return (
-      <ThemedView style={styles.centered}>
-        <ActivityIndicator size="large" />
-      </ThemedView>
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color="#000000" />
+      </View>
     );
   }
 
   return (
-    <ThemedView style={styles.container}>
+    <View style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -131,54 +142,41 @@ export default function Trade() {
           >
             {/* Back Button */}
             <Pressable onPress={() => router.back()} style={styles.backButton}>
-              <ThemedText type="default">Back</ThemedText>
+              <Text style={styles.backText}>Back</Text>
             </Pressable>
 
-            {/* Coin Header */}
+            {/* Coin Header with Icon */}
             <View style={styles.coinHeader}>
-              <View style={styles.coinHeaderRow}>
-                <View>
-                  <ThemedText type="subtitle" style={styles.coinName}>
-                    {baseAsset}
-                  </ThemedText>
-                  <ThemedText type="small" themeColor="textSecondary">
-                    {symbol}
-                  </ThemedText>
+              <View style={styles.coinHeaderLeft}>
+                <CoinIcon symbol={baseAsset ?? ""} size={48} />
+                <View style={styles.coinHeaderText}>
+                  <Text style={styles.coinName}>{coinName}</Text>
+                  <Text style={styles.coinSymbol}>{baseAsset}</Text>
                 </View>
-                <Pressable
-                  onPress={async () => {
-                    if (!symbol || !baseAsset) return;
-                    try {
-                      if (watched) {
-                        await removeItem(symbol);
-                      } else {
-                        await addItem(symbol, baseAsset);
-                      }
-                    } catch {
-                      Alert.alert("Error", "Failed to update watchlist");
-                    }
-                  }}
-                  style={[
-                    styles.watchlistButton,
-                    { backgroundColor: colors.backgroundElement },
-                  ]}
-                >
-                  <ThemedText type="small" style={{ fontWeight: "600" }}>
-                    {watched ? "Watching" : "Watch"}
-                  </ThemedText>
-                </Pressable>
               </View>
+              <Pressable
+                onPress={handleWatchlistToggle}
+                style={styles.watchlistButton}
+              >
+                <Text style={styles.watchlistIcon}>
+                  {watched ? "\u2605" : "\u2606"}
+                </Text>
+              </Pressable>
             </View>
 
             {/* Price Display */}
-            <ThemedView type="backgroundElement" style={styles.priceCard}>
-              <ThemedText type="small" themeColor="textSecondary">
-                Current Price
-              </ThemedText>
-              <ThemedText type="title" style={styles.priceValue}>
+            <View style={styles.priceSection}>
+              <Text style={styles.priceValue}>
                 {price ? formatPrice(price.price) : "--"}
-              </ThemedText>
-            </ThemedView>
+              </Text>
+              <Text style={styles.priceLabel}>Current Price</Text>
+            </View>
+
+            {/* Chart Placeholder */}
+            <View style={styles.chartPlaceholder}>
+              <View style={styles.chartLine} />
+              <Text style={styles.chartLabel}>Price chart coming soon</Text>
+            </View>
 
             {/* Buy / Sell Toggle */}
             <View style={styles.toggleContainer}>
@@ -186,96 +184,82 @@ export default function Trade() {
                 onPress={() => setSide("buy")}
                 style={[
                   styles.toggleButton,
-                  {
-                    backgroundColor:
-                      side === "buy" ? "#22C55E" : colors.backgroundElement,
-                  },
+                  side === "buy" ? styles.toggleBuyActive : styles.toggleInactive,
                 ]}
               >
-                <ThemedText
-                  type="default"
+                <Text
                   style={[
                     styles.toggleText,
-                    { color: side === "buy" ? "#ffffff" : colors.text },
+                    { color: side === "buy" ? "#FFFFFF" : "#71717A" },
                   ]}
                 >
-                  Buy
-                </ThemedText>
+                  Buy {baseAsset}
+                </Text>
               </Pressable>
               <Pressable
                 onPress={() => setSide("sell")}
                 style={[
                   styles.toggleButton,
-                  {
-                    backgroundColor:
-                      side === "sell" ? "#EF4444" : colors.backgroundElement,
-                  },
+                  side === "sell" ? styles.toggleSellActive : styles.toggleInactive,
                 ]}
               >
-                <ThemedText
-                  type="default"
+                <Text
                   style={[
                     styles.toggleText,
-                    { color: side === "sell" ? "#ffffff" : colors.text },
+                    { color: side === "sell" ? "#FFFFFF" : "#71717A" },
                   ]}
                 >
-                  Sell
-                </ThemedText>
+                  Sell {baseAsset}
+                </Text>
               </Pressable>
             </View>
 
             {/* Quantity Input */}
             <View style={styles.inputSection}>
-              <ThemedText type="default" style={styles.inputLabel}>
-                Quantity
-              </ThemedText>
+              <Text style={styles.inputLabel}>Quantity</Text>
               <TextInput
-                style={[
-                  styles.quantityInput,
-                  {
-                    color: colors.text,
-                    backgroundColor: colors.backgroundElement,
-                  },
-                ]}
+                style={styles.quantityInput}
                 placeholder="0.00"
-                placeholderTextColor={colors.secondaryText}
+                placeholderTextColor="#A0A0A0"
                 value={quantity}
                 onChangeText={setQuantity}
                 keyboardType="decimal-pad"
               />
             </View>
 
-            {/* Total */}
-            <ThemedView type="backgroundElement" style={styles.totalCard}>
-              <View style={styles.totalRow}>
-                <ThemedText type="small" themeColor="textSecondary">
-                  Estimated Total
-                </ThemedText>
-                <ThemedText type="default" style={styles.totalValue}>
-                  {formatPrice(total)}
-                </ThemedText>
-              </View>
-            </ThemedView>
+            {/* Estimated Total */}
+            <View style={styles.totalCard}>
+              <Text style={styles.totalLabel}>Estimated Total</Text>
+              <Text style={styles.totalValue}>{formatPrice(total)}</Text>
+            </View>
 
-            {/* Submit */}
+            {/* Submit Button */}
             {submitting ? (
-              <ActivityIndicator size="large" style={{ height: 52 }} />
+              <ActivityIndicator size="large" style={{ height: 52 }} color="#000000" />
             ) : (
-              <CustomButton
-                label={`${side === "buy" ? "Buy" : "Sell"} ${baseAsset}`}
+              <Pressable
                 onPress={handleTrade}
-              />
+                style={({ pressed }) => [
+                  styles.confirmButton,
+                  pressed && { opacity: 0.8 },
+                ]}
+              >
+                <Text style={styles.confirmText}>
+                  Confirm {side === "buy" ? "Purchase" : "Sale"}
+                </Text>
+              </Pressable>
             )}
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
-    </ThemedView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#F5F5F5",
   },
   safeArea: {
     flex: 1,
@@ -284,6 +268,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#F5F5F5",
   },
   keyboardView: {
     flex: 1,
@@ -296,32 +281,102 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.two,
     marginTop: Spacing.two,
   },
+  backText: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#000000",
+    fontFamily: "Outfit",
+  },
   coinHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginTop: Spacing.three,
     marginBottom: Spacing.four,
   },
-  coinHeaderRow: {
+  coinHeaderLeft: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
+    alignItems: "center",
+  },
+  coinHeaderText: {
+    marginLeft: 12,
   },
   coinName: {
-    marginBottom: 4,
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#000000",
+    fontFamily: "Outfit",
+  },
+  coinSymbol: {
+    fontSize: 14,
+    fontWeight: "400",
+    color: "#71717A",
+    marginTop: 2,
+    fontFamily: "Outfit",
   },
   watchlistButton: {
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
-    borderRadius: 10,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "#FFFFFF",
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  priceCard: {
-    padding: Spacing.four,
-    borderRadius: 16,
-    gap: Spacing.two,
+  watchlistIcon: {
+    fontSize: 22,
+    color: "#F7931A",
+  },
+  priceSection: {
     marginBottom: Spacing.four,
   },
   priceValue: {
     fontSize: 36,
+    fontWeight: "700",
+    color: "#000000",
     lineHeight: 44,
+    fontFamily: "Outfit",
+  },
+  priceLabel: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#71717A",
+    marginTop: 4,
+    fontFamily: "Outfit",
+  },
+  chartPlaceholder: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: Spacing.four,
+    marginBottom: Spacing.four,
+    height: 160,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+    overflow: "hidden",
+  },
+  chartLine: {
+    position: "absolute",
+    top: "50%",
+    left: 20,
+    right: 20,
+    height: 2,
+    backgroundColor: "#E0E0E0",
+    borderRadius: 1,
+  },
+  chartLabel: {
+    fontSize: 13,
+    fontWeight: "500",
+    color: "#A0A0A0",
+    fontFamily: "Outfit",
   },
   toggleContainer: {
     flexDirection: "row",
@@ -335,33 +390,86 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  toggleBuyActive: {
+    backgroundColor: "#22C55E",
+  },
+  toggleSellActive: {
+    backgroundColor: "#EF4444",
+  },
+  toggleInactive: {
+    backgroundColor: "#FFFFFF",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
+  },
   toggleText: {
+    fontSize: 15,
     fontWeight: "700",
+    fontFamily: "Outfit",
   },
   inputSection: {
     gap: Spacing.two,
     marginBottom: Spacing.four,
   },
   inputLabel: {
-    fontWeight: "700",
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#000000",
+    fontFamily: "Outfit",
   },
   quantityInput: {
     height: 50,
     borderRadius: 12,
     paddingHorizontal: Spacing.three,
     fontSize: 18,
+    backgroundColor: "#FFFFFF",
+    color: "#000000",
+    fontFamily: "Outfit",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
   },
   totalCard: {
-    padding: Spacing.three,
-    borderRadius: 12,
-    marginBottom: Spacing.four,
-  },
-  totalRow: {
+    backgroundColor: "#FFFFFF",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    padding: Spacing.three,
+    borderRadius: 12,
+    marginBottom: Spacing.four,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  totalLabel: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#71717A",
+    fontFamily: "Outfit",
   },
   totalValue: {
+    fontSize: 16,
     fontWeight: "700",
+    color: "#000000",
+    fontFamily: "Outfit",
+  },
+  confirmButton: {
+    height: 52,
+    borderRadius: 12,
+    backgroundColor: "#000000",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  confirmText: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#FFFFFF",
+    fontFamily: "Outfit",
   },
 });
