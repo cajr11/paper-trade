@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -129,6 +130,28 @@ func GetPrices(symbols []string) (map[string]float64, error) {
 	priceCache.mu.RUnlock()
 
 	return result, nil
+}
+
+func HandleGetPrices(w http.ResponseWriter, r *http.Request) {
+	symbolsParam := r.URL.Query().Get("symbols")
+	if symbolsParam == "" {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": "symbols query parameter is required"})
+		return
+	}
+
+	symbols := strings.Split(symbolsParam, ",")
+	prices, err := GetPrices(symbols)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"error": "failed to fetch prices"})
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(prices)
 }
 
 func HandleGetPrice(w http.ResponseWriter, r *http.Request) {

@@ -184,6 +184,9 @@ export const api = {
 
   getPrice: (symbol: string) =>
     request<PriceEntry>(`/tickers/price?symbol=${symbol}`),
+
+  getPrices: (symbols: string[]) =>
+    request<Record<string, number>>(`/tickers/prices?symbols=${symbols.join(",")}`),
 };
 
 export { ApiError };

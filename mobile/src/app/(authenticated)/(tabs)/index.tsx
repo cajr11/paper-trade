@@ -36,6 +36,7 @@ export default function HomeScreen() {
   const {
     balance,
     holdings,
+    livePrices,
     loading,
     refreshing,
     error,
@@ -51,12 +52,27 @@ export default function HomeScreen() {
     refreshPortfolio();
   }, [refreshPortfolio]);
 
-  const totalInvested = holdings.reduce(
+  // Cost basis: what user paid for holdings
+  const totalCostBasis = holdings.reduce(
     (sum, h) => sum + h.quantity * h.avg_buy_price,
     0,
   );
 
-  const totalValue = balance + totalInvested;
+  // Current market value of holdings using live prices
+  const holdingsMarketValue = holdings.reduce((sum, h) => {
+    const currentPrice = livePrices[h.symbol] ?? h.avg_buy_price;
+    return sum + h.quantity * currentPrice;
+  }, 0);
+
+  // Total balance = cash + current holdings value
+  const totalValue = balance + holdingsMarketValue;
+
+  // Portfolio gain/loss percentage
+  const totalInvested = balance + totalCostBasis; // initial capital
+  const pnlPercent = totalInvested > 0
+    ? ((totalValue - totalInvested) / totalInvested) * 100
+    : 0;
+  const pnlSign = pnlPercent >= 0 ? "+" : "";
 
   const handleHoldingPress = (holding: Holding) => {
     router.push({
@@ -112,7 +128,9 @@ export default function HomeScreen() {
             <Text style={[styles.balanceLabel, { color: colors.secondaryText }]}>Total Balance</Text>
             <Text style={[styles.balanceValue, { color: colors.text }]}>{formatLargeValue(totalValue)}</Text>
             <View style={styles.balanceMetaRow}>
-              <Text style={styles.percentText}>+4.32%</Text>
+              <Text style={[styles.percentText, { color: pnlPercent >= 0 ? colors.gain : colors.loss }]}>
+                {pnlSign}{pnlPercent.toFixed(2)}%
+              </Text>
               <Text style={[styles.allTimeText, { color: colors.secondaryText }]}> all time</Text>
             </View>
             <Text style={[styles.cashLine, { color: colors.secondaryText }]}>
@@ -157,7 +175,12 @@ function HoldingRow({
   onPress: () => void;
 }) {
   const { colors } = useTheme();
-  const value = holding.quantity * holding.avg_buy_price;
+  const { livePrices } = usePortfolioStore();
+  const currentPrice = livePrices[holding.symbol] ?? holding.avg_buy_price;
+  const currentValue = holding.quantity * currentPrice;
+  const costBasis = holding.quantity * holding.avg_buy_price;
+  const changePercent = costBasis > 0 ? ((currentValue - costBasis) / costBasis) * 100 : 0;
+  const changeSign = changePercent >= 0 ? "+" : "";
   const coinName = getCoinName(holding.base_asset);
 
   return (
@@ -177,8 +200,10 @@ function HoldingRow({
         </Text>
       </View>
       <View style={styles.holdingRight}>
-        <Text style={[styles.holdingValue, { color: colors.text }]}>{formatCurrency(value)}</Text>
-        <Text style={styles.holdingChange}>+2.4%</Text>
+        <Text style={[styles.holdingValue, { color: colors.text }]}>{formatCurrency(currentValue)}</Text>
+        <Text style={[styles.holdingChange, { color: changePercent >= 0 ? colors.gain : colors.loss }]}>
+          {changeSign}{changePercent.toFixed(2)}%
+        </Text>
       </View>
     </Pressable>
   );
@@ -255,7 +280,6 @@ const styles = StyleSheet.create({
   percentText: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#22C55E",
     fontFamily: "Outfit",
   },
   allTimeText: {
@@ -345,7 +369,6 @@ const styles = StyleSheet.create({
   holdingChange: {
     fontSize: 13,
     fontWeight: "500",
-    color: "#22C55E",
     fontFamily: "Outfit",
   },
 });
