@@ -1,18 +1,17 @@
-import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider,
-} from "@react-navigation/native";
+import { Stack } from "expo-router";
 import React from "react";
-import { useColorScheme } from "react-native";
 
-import AppTabs from "@/components/navigation/AppTabs";
-
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+export default function AuthenticatedLayout() {
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <AppTabs />
-    </ThemeProvider>
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="(tabs)" />
+      <Stack.Screen
+        name="trade"
+        options={{
+          presentation: "card",
+          animation: "slide_from_right",
+        }}
+      />
+    </Stack>
   );
 }

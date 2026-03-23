@@ -76,10 +76,6 @@ export default function AppTabs() {
         />
       </NativeTabs.Trigger>
 
-      {/* Hidden from tab bar - accessed via navigation */}
-      <NativeTabs.Trigger name="trade" hidden>
-        <NativeTabs.Trigger.Label>Trade</NativeTabs.Trigger.Label>
-      </NativeTabs.Trigger>
     </NativeTabs>
   );
 }
