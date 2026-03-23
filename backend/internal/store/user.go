@@ -10,6 +10,8 @@ type User struct {
 	ID           string    `json:"id"`
 	Email        string    `json:"email"`
 	FullName     string    `json:"full_name"`
+	Username     *string   `json:"username"`
+	Phone        *string   `json:"phone"`
 	PasswordHash string    `json:"-"`
 	Balance      float64   `json:"balance"`
 	CreatedAt    time.Time `json:"created_at"`
@@ -38,14 +40,14 @@ func (s *UserStore) Create(ctx context.Context, user *User) error {
 
 func (s *UserStore) GetByEmail(ctx context.Context, email string) (*User, error) {
 	query := `
-	SELECT id, email, full_name, password_hash, balance, created_at, updated_at
+	SELECT id, email, full_name, username, phone, password_hash, balance, created_at, updated_at
 	FROM users WHERE email = $1
 	`
 
 	user := &User{}
 	err := s.DB.QueryRowContext(ctx, query, email).Scan(
-		&user.ID, &user.Email, &user.FullName, &user.PasswordHash,
-		&user.Balance, &user.CreatedAt, &user.UpdatedAt,
+		&user.ID, &user.Email, &user.FullName, &user.Username, &user.Phone,
+		&user.PasswordHash, &user.Balance, &user.CreatedAt, &user.UpdatedAt,
 	)
 	if err != nil {
 		return nil, err
@@ -56,14 +58,14 @@ func (s *UserStore) GetByEmail(ctx context.Context, email string) (*User, error)
 
 func (s *UserStore) GetByID(ctx context.Context, id string) (*User, error) {
 	query := `
-	SELECT id, email, full_name, password_hash, balance, created_at, updated_at
+	SELECT id, email, full_name, username, phone, password_hash, balance, created_at, updated_at
 	FROM users WHERE id = $1
 	`
 
 	user := &User{}
 	err := s.DB.QueryRowContext(ctx, query, id).Scan(
-		&user.ID, &user.Email, &user.FullName, &user.PasswordHash,
-		&user.Balance, &user.CreatedAt, &user.UpdatedAt,
+		&user.ID, &user.Email, &user.FullName, &user.Username, &user.Phone,
+		&user.PasswordHash, &user.Balance, &user.CreatedAt, &user.UpdatedAt,
 	)
 	if err != nil {
 		return nil, err
@@ -75,5 +77,20 @@ func (s *UserStore) GetByID(ctx context.Context, id string) (*User, error) {
 func (s *UserStore) UpdateBalance(ctx context.Context, tx *sql.Tx, userID string, newBalance float64) error {
 	query := `UPDATE users SET balance = $1, updated_at = NOW() WHERE id = $2`
 	_, err := tx.ExecContext(ctx, query, newBalance, userID)
+	return err
+}
+
+func (s *UserStore) UpdateProfile(ctx context.Context, userID string, fullName, email string, username, phone *string) error {
+	query := `
+	UPDATE users SET full_name = $1, email = $2, username = $3, phone = $4, updated_at = NOW()
+	WHERE id = $5
+	`
+	_, err := s.DB.ExecContext(ctx, query, fullName, email, username, phone, userID)
+	return err
+}
+
+func (s *UserStore) UpdatePassword(ctx context.Context, userID, passwordHash string) error {
+	query := `UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2`
+	_, err := s.DB.ExecContext(ctx, query, passwordHash, userID)
 	return err
 }

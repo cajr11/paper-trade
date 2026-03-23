@@ -68,6 +68,8 @@ func (app *application) mount() http.Handler {
 
 			// User profile
 			r.Get("/me", authHandler.HandleGetMe)
+			r.Patch("/me", authHandler.HandleUpdateProfile)
+			r.Patch("/me/password", authHandler.HandleChangePassword)
 
 			// Portfolio
 			r.Get("/portfolio", tradingHandler.HandleGetPortfolio)
