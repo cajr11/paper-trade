@@ -87,7 +87,7 @@ export default function Profile() {
             <View style={styles.divider} />
             <MenuItem label="Security" onPress={() => {}} />
             <View style={styles.divider} />
-            <MenuItem label="Notification Settings" onPress={() => {}} />
+            <MenuItem label="Notifications" onPress={() => {}} />
             <View style={styles.divider} />
             <MenuItem label="Help & Support" onPress={() => {}} />
             <View style={styles.divider} />
