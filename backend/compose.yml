@@ -3,8 +3,14 @@ services:
     container_name: paper-trade-backend
     build:
       context: .
+    depends_on:
+      db:
+        condition: service_healthy
     env_file:
       - .env
+    environment:
+      DB_HOST: db
+      JWT_SECRET: ${JWT_SECRET:-paper-trade-dev-secret}
     ports:
       - "8080:8080"
     volumes:
@@ -13,7 +19,7 @@ services:
 
   db:
     container_name: paper-trade-db
-    image: postgres:17-alpine
+    image: postgres:16-alpine
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -23,6 +29,11 @@ services:
     volumes:
       # /var/lib/postgresql/data is where the Postgres image stores its database files by default (dictated by the image and in their docs)
       - paper-trade-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
   paper-trade-db-data:
