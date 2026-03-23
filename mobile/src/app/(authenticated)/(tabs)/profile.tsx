@@ -9,7 +9,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useNavigation } from "expo-router";
+import { useNavigation, useRouter } from "expo-router";
 
 import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/useTheme";
@@ -24,6 +24,7 @@ function formatCurrency(value: number): string {
 }
 
 export default function Profile() {
+  const router = useRouter();
   const { logout } = useSession();
   const { colors } = useTheme();
   const { user, loading, fetchUser, clearUser } = useUserStore();
@@ -96,15 +97,15 @@ export default function Profile() {
 
           {/* Settings Menu */}
           <View style={[styles.menuCard, { backgroundColor: colors.card }]}>
-            <MenuItem label="Edit Profile" onPress={() => {}} />
+            <MenuItem label="Edit Profile" onPress={() => router.push("/(authenticated)/edit-profile")} />
             <View style={[styles.divider, { backgroundColor: colors.border }]} />
-            <MenuItem label="Security" onPress={() => {}} />
+            <MenuItem label="Security" onPress={() => router.push("/(authenticated)/security")} />
             <View style={[styles.divider, { backgroundColor: colors.border }]} />
-            <MenuItem label="Notifications" onPress={() => {}} />
+            <MenuItem label="Notifications" onPress={() => router.push("/(authenticated)/notification-settings")} />
             <View style={[styles.divider, { backgroundColor: colors.border }]} />
-            <MenuItem label="Help & Support" onPress={() => {}} />
+            <MenuItem label="Help & Support" onPress={() => router.push("/(authenticated)/help-support")} />
             <View style={[styles.divider, { backgroundColor: colors.border }]} />
-            <MenuItem label="FAQ" onPress={() => {}} />
+            <MenuItem label="FAQ" onPress={() => router.push("/(authenticated)/faq")} />
           </View>
 
           {/* Logout */}
