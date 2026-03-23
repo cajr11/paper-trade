@@ -1,93 +1,195 @@
-import React from "react";
-import { Platform, ScrollView, StyleSheet } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import React, { useCallback, useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  StyleSheet,
+  TextInput,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
 
+import { ThemedText } from "@/components/ui/ThemedText";
 import { ThemedView } from "@/components/ui/ThemedView";
-import { BottomTabInset, MaxContentWidth, Spacing } from "@/constants/theme";
+import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/useTheme";
+import { api, type Ticker } from "@/lib/api";
 
 export default function Explore() {
-  const safeAreaInsets = useSafeAreaInsets();
-  const insets = {
-    ...safeAreaInsets,
-    bottom: safeAreaInsets.bottom + BottomTabInset + Spacing.three,
-  };
   const { colors } = useTheme();
+  const router = useRouter();
+  const [tickers, setTickers] = useState<Ticker[]>([]);
+  const [filtered, setFiltered] = useState<Ticker[]>([]);
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  const contentPlatformStyle = Platform.select({
-    android: {
-      paddingTop: insets.top,
-      paddingLeft: insets.left,
-      paddingRight: insets.right,
-      paddingBottom: insets.bottom,
-    },
-    web: {
-      paddingTop: Spacing.six,
-      paddingBottom: Spacing.four,
-    },
-  });
+  const fetchTickers = useCallback(async () => {
+    try {
+      const data = await api.getTickers();
+      setTickers(data);
+      setFiltered(data);
+    } catch {
+      // silent fail
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchTickers();
+  }, [fetchTickers]);
+
+  useEffect(() => {
+    if (!search.trim()) {
+      setFiltered(tickers);
+      return;
+    }
+    const query = search.toLowerCase();
+    setFiltered(
+      tickers.filter(
+        (t) =>
+          t.baseAsset.toLowerCase().includes(query) ||
+          t.symbol.toLowerCase().includes(query),
+      ),
+    );
+  }, [search, tickers]);
+
+  const handleTickerPress = (ticker: Ticker) => {
+    router.push({
+      pathname: "/(authenticated)/trade",
+      params: {
+        symbol: ticker.symbol,
+        baseAsset: ticker.baseAsset,
+      },
+    });
+  };
+
+  const renderTicker = ({ item }: { item: Ticker }) => (
+    <Pressable
+      onPress={() => handleTickerPress(item)}
+      style={({ pressed }) => [
+        styles.tickerRow,
+        { backgroundColor: colors.backgroundElement },
+        pressed && { opacity: 0.7 },
+      ]}
+    >
+      <View style={styles.tickerInfo}>
+        <ThemedText type="default" style={styles.tickerSymbol}>
+          {item.baseAsset}
+        </ThemedText>
+        <ThemedText type="small" themeColor="textSecondary">
+          {item.symbol}
+        </ThemedText>
+      </View>
+      <ThemedText type="small" themeColor="textSecondary">
+        USDT
+      </ThemedText>
+    </Pressable>
+  );
+
+  if (loading) {
+    return (
+      <ThemedView style={styles.centered}>
+        <ActivityIndicator size="large" />
+      </ThemedView>
+    );
+  }
 
   return (
-    <ScrollView
-      style={[styles.scrollView, { backgroundColor: colors.background }]}
-      contentInset={insets}
-      contentContainerStyle={[styles.contentContainer, contentPlatformStyle]}
-    >
-      <ThemedView style={styles.container}></ThemedView>
-    </ScrollView>
+    <ThemedView style={styles.container}>
+      <SafeAreaView style={styles.safeArea}>
+        <ThemedText type="subtitle" style={styles.header}>
+          Explore
+        </ThemedText>
+
+        {/* Search Bar */}
+        <View style={styles.searchContainer}>
+          <TextInput
+            style={[
+              styles.searchInput,
+              {
+                color: colors.text,
+                backgroundColor: colors.backgroundElement,
+              },
+            ]}
+            placeholder="Search tokens..."
+            placeholderTextColor={colors.secondaryText}
+            value={search}
+            onChangeText={setSearch}
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+        </View>
+
+        {/* Ticker List */}
+        <FlatList
+          data={filtered}
+          renderItem={renderTicker}
+          keyExtractor={(item) => item.symbol}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            <ThemedView type="backgroundElement" style={styles.emptyCard}>
+              <ThemedText type="small" themeColor="textSecondary">
+                No tokens found
+              </ThemedText>
+            </ThemedView>
+          }
+        />
+      </SafeAreaView>
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  scrollView: {
+  container: {
     flex: 1,
   },
-  contentContainer: {
-    flexDirection: "row",
+  safeArea: {
+    flex: 1,
+  },
+  centered: {
+    flex: 1,
     justifyContent: "center",
-  },
-  container: {
-    maxWidth: MaxContentWidth,
-    flexGrow: 1,
-  },
-  titleContainer: {
-    gap: Spacing.three,
     alignItems: "center",
+  },
+  header: {
+    marginBottom: Spacing.three,
+    marginTop: Spacing.three,
     paddingHorizontal: Spacing.four,
-    paddingVertical: Spacing.six,
   },
-  centerText: {
-    textAlign: "center",
+  searchContainer: {
+    paddingHorizontal: Spacing.four,
+    marginBottom: Spacing.three,
   },
-  pressed: {
-    opacity: 0.7,
+  searchInput: {
+    height: 48,
+    borderRadius: 12,
+    paddingHorizontal: Spacing.three,
+    fontSize: 16,
   },
-  linkButton: {
+  listContent: {
+    paddingHorizontal: Spacing.four,
+    paddingBottom: 100,
+  },
+  tickerRow: {
     flexDirection: "row",
-    paddingHorizontal: Spacing.four,
-    paddingVertical: Spacing.two,
-    borderRadius: Spacing.five,
-    justifyContent: "center",
-    gap: Spacing.one,
+    justifyContent: "space-between",
     alignItems: "center",
+    padding: Spacing.three,
+    borderRadius: 12,
+    marginBottom: Spacing.two,
   },
-  sectionsWrapper: {
-    gap: Spacing.five,
-    paddingHorizontal: Spacing.four,
-    paddingTop: Spacing.three,
+  tickerInfo: {
+    gap: 2,
   },
-  collapsibleContent: {
+  tickerSymbol: {
+    fontWeight: "700",
+  },
+  emptyCard: {
+    padding: Spacing.four,
+    borderRadius: 16,
     alignItems: "center",
-  },
-  imageTutorial: {
-    width: "100%",
-    aspectRatio: 296 / 171,
-    borderRadius: Spacing.three,
-    marginTop: Spacing.two,
-  },
-  imageReact: {
-    width: 100,
-    height: 100,
-    alignSelf: "center",
   },
 });
