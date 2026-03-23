@@ -35,7 +35,7 @@ export default function Login() {
     try {
       const response = await api.login(email.trim(), password);
       login(response.token);
-      router.replace("/(authenticated)");
+      router.replace("/(authenticated)/(tabs)" as any);
     } catch (error) {
       if (error instanceof ApiError) {
         Alert.alert("Login Failed", error.message);

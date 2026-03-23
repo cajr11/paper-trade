@@ -7,5 +7,5 @@ export default function Unauthenticated() {
 
   if (isLoading) return <LoadingScreen />;
   if (!session) return <Redirect href="/login" />;
-  return <Redirect href="/(authenticated)" />;
+  return <Redirect href={"/(authenticated)/(tabs)" as any} />;
 }

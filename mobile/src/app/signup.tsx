@@ -41,7 +41,7 @@ export default function Signup() {
     try {
       const response = await api.signup(fullName.trim(), email.trim(), password);
       login(response.token);
-      router.replace("/(authenticated)");
+      router.replace("/(authenticated)/(tabs)" as any);
     } catch (error) {
       if (error instanceof ApiError) {
         Alert.alert("Signup Failed", error.message);
