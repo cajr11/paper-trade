@@ -16,11 +16,13 @@ import { Ionicons } from "@expo/vector-icons";
 
 import CoinIcon, { getCoinName } from "@/components/ui/CoinIcon";
 import { Spacing } from "@/constants/theme";
+import { useTheme } from "@/hooks/useTheme";
 import { useWatchlistStore } from "@/stores/watchlist-store";
 import type { WatchlistItem } from "@/lib/api";
 
 export default function Watchlist() {
   const router = useRouter();
+  const { colors } = useTheme();
   const { items, loading, refreshing, fetchWatchlist, refreshWatchlist, removeItem } =
     useWatchlistStore();
   const [search, setSearch] = useState("");
@@ -84,16 +86,17 @@ export default function Watchlist() {
         onLongPress={() => handleRemove(item.symbol, item.base_asset)}
         style={({ pressed }) => [
           styles.row,
+          { backgroundColor: colors.card },
           pressed && { opacity: 0.7 },
         ]}
       >
         <CoinIcon symbol={item.base_asset} size={44} />
         <View style={styles.rowInfo}>
-          <Text style={styles.coinName}>{coinName}</Text>
-          <Text style={styles.coinSymbol}>{item.base_asset}/USDT</Text>
+          <Text style={[styles.coinName, { color: colors.text }]}>{coinName}</Text>
+          <Text style={[styles.coinSymbol, { color: colors.secondaryText }]}>{item.base_asset}/USDT</Text>
         </View>
         <View style={styles.rowRight}>
-          <Text style={styles.pricePlaceholder}>{item.base_asset}/USDT</Text>
+          <Text style={[styles.pricePlaceholder, { color: colors.text }]}>{item.base_asset}/USDT</Text>
           <Text style={styles.changePlaceholder}>+0.00%</Text>
         </View>
       </Pressable>
@@ -102,34 +105,34 @@ export default function Watchlist() {
 
   if (loading) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#000000" />
+      <View style={[styles.centered, { backgroundColor: colors.surface }]}>
+        <ActivityIndicator size="large" color={colors.text} />
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.surface }]}>
       <SafeAreaView style={styles.safeArea}>
         {/* Header */}
         <View style={styles.headerRow}>
-          <Text style={styles.header}>Watchlist</Text>
+          <Text style={[styles.header, { color: colors.text }]}>Watchlist</Text>
           <Pressable
             onPress={() => router.push("/(authenticated)/(tabs)/explore")}
-            style={styles.addButton}
+            style={[styles.addButton, { backgroundColor: colors.buttonPrimary }]}
           >
-            <Text style={styles.addIcon}>+</Text>
+            <Text style={[styles.addIcon, { color: colors.buttonPrimaryText }]}>+</Text>
           </Pressable>
         </View>
 
         {/* Search Bar */}
         <View style={styles.searchContainer}>
-          <View style={styles.searchInputWrapper}>
-            <Ionicons name="search" size={18} color="#A0A0A0" style={styles.searchIcon} />
+          <View style={[styles.searchInputWrapper, { backgroundColor: colors.card }]}>
+            <Ionicons name="search" size={18} color={colors.placeholder} style={styles.searchIcon} />
             <TextInput
-              style={styles.searchInput}
+              style={[styles.searchInput, { color: colors.text }]}
               placeholder="Search coins..."
-              placeholderTextColor="#A0A0A0"
+              placeholderTextColor={colors.placeholder}
               value={search}
               onChangeText={setSearch}
               autoCapitalize="none"
@@ -148,8 +151,8 @@ export default function Watchlist() {
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
           ListEmptyComponent={
-            <View style={styles.emptyCard}>
-              <Text style={styles.emptyText}>
+            <View style={[styles.emptyCard, { backgroundColor: colors.card }]}>
+              <Text style={[styles.emptyText, { color: colors.secondaryText }]}>
                 Your watchlist is empty. Add tokens from the Explore tab.
               </Text>
             </View>
@@ -163,7 +166,6 @@ export default function Watchlist() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F5F5F5",
   },
   safeArea: {
     flex: 1,
@@ -172,7 +174,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#F5F5F5",
   },
   headerRow: {
     flexDirection: "row",
@@ -185,21 +186,18 @@ const styles = StyleSheet.create({
   header: {
     fontSize: 28,
     fontWeight: "700",
-    color: "#000000",
     fontFamily: "Outfit",
   },
   addButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "#000000",
     justifyContent: "center",
     alignItems: "center",
   },
   addIcon: {
     fontSize: 22,
     fontWeight: "500",
-    color: "#FFFFFF",
     lineHeight: 24,
   },
   searchContainer: {
@@ -209,7 +207,6 @@ const styles = StyleSheet.create({
   searchInputWrapper: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
     borderRadius: 12,
     paddingHorizontal: Spacing.three,
     height: 48,
@@ -225,7 +222,6 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 16,
-    color: "#000000",
     fontFamily: "Outfit",
     height: 48,
   },
@@ -236,7 +232,6 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
     padding: Spacing.three,
     borderRadius: 12,
     marginBottom: Spacing.two,
@@ -254,13 +249,11 @@ const styles = StyleSheet.create({
   coinName: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#000000",
     fontFamily: "Outfit",
   },
   coinSymbol: {
     fontSize: 13,
     fontWeight: "400",
-    color: "#71717A",
     fontFamily: "Outfit",
   },
   rowRight: {
@@ -270,7 +263,6 @@ const styles = StyleSheet.create({
   pricePlaceholder: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#000000",
     fontFamily: "Outfit",
   },
   changePlaceholder: {
@@ -280,7 +272,6 @@ const styles = StyleSheet.create({
     fontFamily: "Outfit",
   },
   emptyCard: {
-    backgroundColor: "#FFFFFF",
     padding: Spacing.four,
     borderRadius: 16,
     alignItems: "center",
@@ -293,7 +284,6 @@ const styles = StyleSheet.create({
   emptyText: {
     textAlign: "center",
     fontSize: 14,
-    color: "#71717A",
     fontFamily: "Outfit",
   },
 });

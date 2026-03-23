@@ -12,6 +12,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { getCoinName } from "@/components/ui/CoinIcon";
 import { Spacing } from "@/constants/theme";
+import { useTheme } from "@/hooks/useTheme";
 import { useTradeStore } from "@/stores/trade-store";
 import type { Trade } from "@/lib/api";
 
@@ -58,6 +59,7 @@ function getDateGroup(dateString: string): string {
 type GroupedTrades = { title: string; data: Trade[] }[];
 
 export default function History() {
+  const { colors } = useTheme();
   const { trades, loading, refreshing, fetchTrades, refreshTrades } =
     useTradeStore();
   const [activeFilter, setActiveFilter] = useState<FilterOption>("All");
@@ -88,16 +90,16 @@ export default function History() {
 
   if (loading) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#000000" />
+      <View style={[styles.centered, { backgroundColor: colors.surface }]}>
+        <ActivityIndicator size="large" color={colors.text} />
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.surface }]}>
       <SafeAreaView style={styles.safeArea}>
-        <Text style={styles.header}>History</Text>
+        <Text style={[styles.header, { color: colors.text }]}>History</Text>
 
         {/* Filter Pills */}
         <View style={styles.filterContainer}>
@@ -108,14 +110,14 @@ export default function History() {
               style={[
                 styles.filterPill,
                 activeFilter === filter
-                  ? styles.filterPillActive
-                  : styles.filterPillInactive,
+                  ? { backgroundColor: colors.pillActive }
+                  : [styles.filterPillInactive, { backgroundColor: colors.pillInactive }],
               ]}
             >
               <Text
                 style={[
                   styles.filterText,
-                  { color: activeFilter === filter ? "#FFFFFF" : "#71717A" },
+                  { color: activeFilter === filter ? colors.pillActiveText : colors.secondaryText },
                 ]}
               >
                 {filter}
@@ -132,15 +134,15 @@ export default function History() {
           }
         >
           {filteredTrades.length === 0 ? (
-            <View style={styles.emptyCard}>
-              <Text style={styles.emptyText}>
+            <View style={[styles.emptyCard, { backgroundColor: colors.card }]}>
+              <Text style={[styles.emptyText, { color: colors.secondaryText }]}>
                 No transactions yet. Start trading to see your history.
               </Text>
             </View>
           ) : (
             grouped.map((group) => (
               <View key={group.title}>
-                <Text style={styles.dateGroupTitle}>{group.title}</Text>
+                <Text style={[styles.dateGroupTitle, { color: colors.secondaryText }]}>{group.title}</Text>
                 {group.data.map((trade) => (
                   <TradeRow key={trade.id} trade={trade} />
                 ))}
@@ -154,13 +156,14 @@ export default function History() {
 }
 
 function TradeRow({ trade }: { trade: Trade }) {
+  const { colors } = useTheme();
   const isBuy = trade.side === "buy";
   const coinName = getCoinName(trade.base_asset);
   const actionText = isBuy ? `Bought ${coinName}` : `Sold ${coinName}`;
-  const arrowColor = isBuy ? "#22C55E" : "#EF4444";
+  const arrowColor = isBuy ? colors.gain : colors.loss;
 
   return (
-    <View style={styles.row}>
+    <View style={[styles.row, { backgroundColor: colors.card }]}>
       {/* Arrow icon */}
       <View style={[styles.arrowCircle, { backgroundColor: isBuy ? "#ECFDF5" : "#FEF2F2" }]}>
         <Text style={[styles.arrowIcon, { color: arrowColor }]}>
@@ -169,8 +172,8 @@ function TradeRow({ trade }: { trade: Trade }) {
       </View>
 
       <View style={styles.rowInfo}>
-        <Text style={styles.actionText}>{actionText}</Text>
-        <Text style={styles.detailText}>
+        <Text style={[styles.actionText, { color: colors.text }]}>{actionText}</Text>
+        <Text style={[styles.detailText, { color: colors.secondaryText }]}>
           {formatTime(trade.created_at)} {"\u00B7"} {trade.quantity.toFixed(trade.quantity < 1 ? 6 : 3)} {trade.base_asset}
         </Text>
       </View>
@@ -187,7 +190,6 @@ function TradeRow({ trade }: { trade: Trade }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F5F5F5",
   },
   safeArea: {
     flex: 1,
@@ -196,12 +198,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#F5F5F5",
   },
   header: {
     fontSize: 28,
     fontWeight: "700",
-    color: "#000000",
     marginBottom: Spacing.three,
     marginTop: Spacing.three,
     paddingHorizontal: Spacing.four,
@@ -218,11 +218,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 20,
   },
-  filterPillActive: {
-    backgroundColor: "#000000",
-  },
   filterPillInactive: {
-    backgroundColor: "#FFFFFF",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.04,
@@ -241,7 +237,6 @@ const styles = StyleSheet.create({
   dateGroupTitle: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#71717A",
     marginBottom: Spacing.two,
     marginTop: Spacing.two,
     fontFamily: "Outfit",
@@ -249,7 +244,6 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
     padding: Spacing.three,
     borderRadius: 12,
     marginBottom: Spacing.two,
@@ -278,13 +272,11 @@ const styles = StyleSheet.create({
   actionText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#000000",
     fontFamily: "Outfit",
   },
   detailText: {
     fontSize: 13,
     fontWeight: "400",
-    color: "#71717A",
     fontFamily: "Outfit",
   },
   rowRight: {
@@ -296,7 +288,6 @@ const styles = StyleSheet.create({
     fontFamily: "Outfit",
   },
   emptyCard: {
-    backgroundColor: "#FFFFFF",
     padding: Spacing.four,
     borderRadius: 16,
     alignItems: "center",
@@ -309,7 +300,6 @@ const styles = StyleSheet.create({
   emptyText: {
     textAlign: "center",
     fontSize: 14,
-    color: "#71717A",
     fontFamily: "Outfit",
   },
 });

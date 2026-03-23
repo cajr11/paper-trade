@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Spacing } from "@/constants/theme";
+import { useTheme } from "@/hooks/useTheme";
 import { useUserStore } from "@/stores/user-store";
 import { useSession } from "@/providers/SessionProvider";
 
@@ -23,6 +24,7 @@ function formatCurrency(value: number): string {
 
 export default function Profile() {
   const { logout } = useSession();
+  const { colors } = useTheme();
   const { user, loading, fetchUser, clearUser } = useUserStore();
 
   useEffect(() => {
@@ -51,46 +53,46 @@ export default function Profile() {
 
   if (loading) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#000000" />
+      <View style={[styles.centered, { backgroundColor: colors.surface }]}>
+        <ActivityIndicator size="large" color={colors.text} />
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.surface }]}>
       <SafeAreaView style={styles.safeArea}>
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.header}>Profile</Text>
+          <Text style={[styles.header, { color: colors.text }]}>Profile</Text>
 
           {/* User Info Card */}
-          <View style={styles.userCard}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>{initials}</Text>
+          <View style={[styles.userCard, { backgroundColor: colors.card }]}>
+            <View style={[styles.avatar, { backgroundColor: colors.backgroundElement }]}>
+              <Text style={[styles.avatarText, { color: colors.text }]}>{initials}</Text>
             </View>
-            <Text style={styles.userName}>{user?.full_name ?? "Unknown"}</Text>
-            <Text style={styles.userEmail}>{user?.email ?? ""}</Text>
+            <Text style={[styles.userName, { color: colors.text }]}>{user?.full_name ?? "Unknown"}</Text>
+            <Text style={[styles.userEmail, { color: colors.secondaryText }]}>{user?.email ?? ""}</Text>
             <View style={styles.balanceContainer}>
-              <Text style={styles.balanceLabel}>Account Balance</Text>
-              <Text style={styles.balanceValue}>
+              <Text style={[styles.balanceLabel, { color: colors.secondaryText }]}>Account Balance</Text>
+              <Text style={[styles.balanceValue, { color: colors.text }]}>
                 {formatCurrency(user?.balance ?? 0)}
               </Text>
             </View>
           </View>
 
           {/* Settings Menu */}
-          <View style={styles.menuCard}>
+          <View style={[styles.menuCard, { backgroundColor: colors.card }]}>
             <MenuItem label="Edit Profile" onPress={() => {}} />
-            <View style={styles.divider} />
+            <View style={[styles.divider, { backgroundColor: colors.border }]} />
             <MenuItem label="Security" onPress={() => {}} />
-            <View style={styles.divider} />
+            <View style={[styles.divider, { backgroundColor: colors.border }]} />
             <MenuItem label="Notifications" onPress={() => {}} />
-            <View style={styles.divider} />
+            <View style={[styles.divider, { backgroundColor: colors.border }]} />
             <MenuItem label="Help & Support" onPress={() => {}} />
-            <View style={styles.divider} />
+            <View style={[styles.divider, { backgroundColor: colors.border }]} />
             <MenuItem label="FAQ" onPress={() => {}} />
           </View>
 
@@ -99,6 +101,7 @@ export default function Profile() {
             onPress={handleLogout}
             style={({ pressed }) => [
               styles.logoutButton,
+              { backgroundColor: colors.card },
               pressed && { opacity: 0.7 },
             ]}
           >
@@ -117,16 +120,17 @@ function MenuItem({
   label: string;
   onPress: () => void;
 }) {
+  const { colors } = useTheme();
   return (
     <Pressable
       onPress={onPress}
       style={({ pressed }) => [
         styles.menuItem,
-        pressed && { backgroundColor: "#F5F5F5" },
+        pressed && { backgroundColor: colors.backgroundElement },
       ]}
     >
-      <Text style={styles.menuLabel}>{label}</Text>
-      <Text style={styles.chevron}>{"\u203A"}</Text>
+      <Text style={[styles.menuLabel, { color: colors.text }]}>{label}</Text>
+      <Text style={[styles.chevron, { color: colors.placeholder }]}>{"\u203A"}</Text>
     </Pressable>
   );
 }
@@ -134,7 +138,6 @@ function MenuItem({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F5F5F5",
   },
   safeArea: {
     flex: 1,
@@ -143,7 +146,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#F5F5F5",
   },
   scrollContent: {
     paddingHorizontal: Spacing.four,
@@ -152,13 +154,11 @@ const styles = StyleSheet.create({
   header: {
     fontSize: 28,
     fontWeight: "700",
-    color: "#000000",
     marginBottom: Spacing.four,
     marginTop: Spacing.three,
     fontFamily: "Outfit",
   },
   userCard: {
-    backgroundColor: "#FFFFFF",
     padding: Spacing.four,
     borderRadius: 16,
     alignItems: "center",
@@ -173,7 +173,6 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: "#E0E1E6",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 12,
@@ -181,19 +180,16 @@ const styles = StyleSheet.create({
   avatarText: {
     fontSize: 24,
     fontWeight: "700",
-    color: "#000000",
     fontFamily: "Outfit",
   },
   userName: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#000000",
     fontFamily: "Outfit",
   },
   userEmail: {
     fontSize: 14,
     fontWeight: "400",
-    color: "#71717A",
     marginTop: 2,
     fontFamily: "Outfit",
   },
@@ -205,17 +201,14 @@ const styles = StyleSheet.create({
   balanceLabel: {
     fontSize: 14,
     fontWeight: "500",
-    color: "#71717A",
     fontFamily: "Outfit",
   },
   balanceValue: {
     fontSize: 22,
     fontWeight: "700",
-    color: "#000000",
     fontFamily: "Outfit",
   },
   menuCard: {
-    backgroundColor: "#FFFFFF",
     borderRadius: 16,
     overflow: "hidden",
     marginBottom: Spacing.four,
@@ -235,23 +228,19 @@ const styles = StyleSheet.create({
   menuLabel: {
     fontSize: 16,
     fontWeight: "500",
-    color: "#000000",
     fontFamily: "Outfit",
   },
   chevron: {
     fontSize: 22,
     fontWeight: "300",
-    color: "#A0A0A0",
   },
   divider: {
     height: 1,
-    backgroundColor: "#F0F0F3",
     marginHorizontal: Spacing.four,
   },
   logoutButton: {
     height: 52,
     borderRadius: 12,
-    backgroundColor: "#FFFFFF",
     justifyContent: "center",
     alignItems: "center",
     shadowColor: "#000",

@@ -15,6 +15,7 @@ import CoinIcon, { getCoinName } from "@/components/ui/CoinIcon";
 import ErrorState from "@/components/ui/ErrorState";
 import { CardSkeleton, ListSkeleton } from "@/components/ui/Skeleton";
 import { Spacing } from "@/constants/theme";
+import { useTheme } from "@/hooks/useTheme";
 import { usePortfolioStore } from "@/stores/portfolio-store";
 import type { Holding } from "@/lib/api";
 
@@ -31,6 +32,7 @@ function formatLargeValue(value: number): string {
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { colors } = useTheme();
   const {
     balance,
     holdings,
@@ -68,7 +70,7 @@ export default function HomeScreen() {
 
   if (loading) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: colors.surface }]}>
         <SafeAreaView style={styles.safeArea}>
           <ScrollView contentContainerStyle={styles.scrollContent}>
             <CardSkeleton />
@@ -86,7 +88,7 @@ export default function HomeScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.surface }]}>
       <SafeAreaView style={styles.safeArea}>
         <ScrollView
           style={styles.scrollView}
@@ -97,38 +99,38 @@ export default function HomeScreen() {
         >
           {/* Header Row */}
           <View style={styles.headerRow}>
-            <Text style={styles.headerTitle}>Portfolio</Text>
-            <Pressable style={styles.bellButton}>
+            <Text style={[styles.headerTitle, { color: colors.text }]}>Portfolio</Text>
+            <Pressable style={[styles.bellButton, { backgroundColor: colors.card }]}>
               <View style={styles.bellIconWrapper}>
-                <Ionicons name="notifications-outline" size={18} color="#000000" />
+                <Ionicons name="notifications-outline" size={18} color={colors.icon} />
               </View>
             </Pressable>
           </View>
 
           {/* Total Balance */}
           <View style={styles.balanceSection}>
-            <Text style={styles.balanceLabel}>Total Balance</Text>
-            <Text style={styles.balanceValue}>{formatLargeValue(totalValue)}</Text>
+            <Text style={[styles.balanceLabel, { color: colors.secondaryText }]}>Total Balance</Text>
+            <Text style={[styles.balanceValue, { color: colors.text }]}>{formatLargeValue(totalValue)}</Text>
             <View style={styles.balanceMetaRow}>
               <Text style={styles.percentText}>+4.32%</Text>
-              <Text style={styles.allTimeText}> all time</Text>
+              <Text style={[styles.allTimeText, { color: colors.secondaryText }]}> all time</Text>
             </View>
-            <Text style={styles.cashLine}>
+            <Text style={[styles.cashLine, { color: colors.secondaryText }]}>
               Available Cash {formatCurrency(balance)}
             </Text>
           </View>
 
           {/* Holdings Section Header */}
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Holdings</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Holdings</Text>
             <Pressable>
-              <Text style={styles.seeAll}>{"See all \u2192"}</Text>
+              <Text style={[styles.seeAll, { color: colors.secondaryText }]}>{"See all \u2192"}</Text>
             </Pressable>
           </View>
 
           {holdings.length === 0 ? (
-            <View style={styles.emptyCard}>
-              <Text style={styles.emptyText}>
+            <View style={[styles.emptyCard, { backgroundColor: colors.card }]}>
+              <Text style={[styles.emptyText, { color: colors.secondaryText }]}>
                 No holdings yet. Go to Explore to start trading!
               </Text>
             </View>
@@ -154,6 +156,7 @@ function HoldingRow({
   holding: Holding;
   onPress: () => void;
 }) {
+  const { colors } = useTheme();
   const value = holding.quantity * holding.avg_buy_price;
   const coinName = getCoinName(holding.base_asset);
 
@@ -162,18 +165,19 @@ function HoldingRow({
       onPress={onPress}
       style={({ pressed }) => [
         styles.holdingRow,
+        { backgroundColor: colors.card },
         pressed && { opacity: 0.7 },
       ]}
     >
       <CoinIcon symbol={holding.base_asset} size={44} />
       <View style={styles.holdingInfo}>
-        <Text style={styles.holdingName}>{coinName}</Text>
-        <Text style={styles.holdingSubtext}>
+        <Text style={[styles.holdingName, { color: colors.text }]}>{coinName}</Text>
+        <Text style={[styles.holdingSubtext, { color: colors.secondaryText }]}>
           {holding.quantity.toFixed(holding.quantity < 1 ? 6 : 3)} {holding.base_asset}
         </Text>
       </View>
       <View style={styles.holdingRight}>
-        <Text style={styles.holdingValue}>{formatCurrency(value)}</Text>
+        <Text style={[styles.holdingValue, { color: colors.text }]}>{formatCurrency(value)}</Text>
         <Text style={styles.holdingChange}>+2.4%</Text>
       </View>
     </Pressable>
@@ -183,7 +187,6 @@ function HoldingRow({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F5F5F5",
   },
   safeArea: {
     flex: 1,
@@ -207,14 +210,12 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 28,
     fontWeight: "700",
-    color: "#000000",
     fontFamily: "Outfit",
   },
   bellButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "#FFFFFF",
     justifyContent: "center",
     alignItems: "center",
     shadowColor: "#000",
@@ -237,14 +238,12 @@ const styles = StyleSheet.create({
   balanceLabel: {
     fontSize: 14,
     fontWeight: "500",
-    color: "#71717A",
     marginBottom: 4,
     fontFamily: "Outfit",
   },
   balanceValue: {
     fontSize: 48,
     fontWeight: "700",
-    color: "#000000",
     lineHeight: 56,
     fontFamily: "Outfit",
   },
@@ -262,13 +261,11 @@ const styles = StyleSheet.create({
   allTimeText: {
     fontSize: 14,
     fontWeight: "400",
-    color: "#71717A",
     fontFamily: "Outfit",
   },
   cashLine: {
     fontSize: 14,
     fontWeight: "500",
-    color: "#71717A",
     marginTop: 8,
     fontFamily: "Outfit",
   },
@@ -283,19 +280,16 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#000000",
     fontFamily: "Outfit",
   },
   seeAll: {
     fontSize: 14,
     fontWeight: "500",
-    color: "#71717A",
     fontFamily: "Outfit",
   },
 
   // Empty
   emptyCard: {
-    backgroundColor: "#FFFFFF",
     padding: Spacing.four,
     borderRadius: 16,
     alignItems: "center",
@@ -308,7 +302,6 @@ const styles = StyleSheet.create({
   emptyText: {
     textAlign: "center",
     fontSize: 14,
-    color: "#71717A",
     fontFamily: "Outfit",
   },
 
@@ -316,7 +309,6 @@ const styles = StyleSheet.create({
   holdingRow: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
     padding: Spacing.three,
     borderRadius: 12,
     marginBottom: Spacing.two,
@@ -334,13 +326,11 @@ const styles = StyleSheet.create({
   holdingName: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#000000",
     fontFamily: "Outfit",
   },
   holdingSubtext: {
     fontSize: 13,
     fontWeight: "400",
-    color: "#71717A",
     fontFamily: "Outfit",
   },
   holdingRight: {
@@ -350,7 +340,6 @@ const styles = StyleSheet.create({
   holdingValue: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#000000",
     fontFamily: "Outfit",
   },
   holdingChange: {

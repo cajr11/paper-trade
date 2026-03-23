@@ -16,6 +16,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 
 import CoinIcon, { getCoinName } from "@/components/ui/CoinIcon";
 import { Spacing } from "@/constants/theme";
+import { useTheme } from "@/hooks/useTheme";
 import { api, ApiError, type PriceEntry } from "@/lib/api";
 import { usePortfolioStore } from "@/stores/portfolio-store";
 import { useTradeStore } from "@/stores/trade-store";
@@ -28,6 +29,7 @@ const TIME_PERIODS = ["1D", "1W", "1M", "1Y"] as const;
 
 export default function Trade() {
   const router = useRouter();
+  const { colors } = useTheme();
   const { symbol, baseAsset } = useLocalSearchParams<{
     symbol: string;
     baseAsset: string;
@@ -137,8 +139,8 @@ export default function Trade() {
 
   if (loading) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#000000" />
+      <View style={[styles.centered, { backgroundColor: colors.surface }]}>
+        <ActivityIndicator size="large" color={colors.text} />
       </View>
     );
   }
@@ -146,7 +148,7 @@ export default function Trade() {
   // --- ORDER VIEW ---
   if (view === "order") {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: colors.surface }]}>
         <SafeAreaView style={styles.safeArea}>
           <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -158,25 +160,25 @@ export default function Trade() {
             >
               {/* Back */}
               <Pressable onPress={() => setView("detail")} style={styles.backButton}>
-                <Text style={styles.backText}>{"\u2190"} Back</Text>
+                <Text style={[styles.backText, { color: colors.text }]}>{"\u2190"} Back</Text>
               </Pressable>
 
               {/* Title */}
-              <Text style={styles.orderTitle}>
+              <Text style={[styles.orderTitle, { color: colors.text }]}>
                 {side === "buy" ? "Buy" : "Sell"} {coinName}
               </Text>
 
-              <Text style={styles.currentPriceLabel}>
+              <Text style={[styles.currentPriceLabel, { color: colors.secondaryText }]}>
                 Current price: {price ? formatPrice(price.price) : "--"}
               </Text>
 
               {/* Amount Input */}
               <View style={styles.amountSection}>
-                <Text style={styles.amountLabel}>Amount (USD)</Text>
+                <Text style={[styles.amountLabel, { color: colors.text }]}>Amount (USD)</Text>
                 <TextInput
-                  style={styles.amountInput}
+                  style={[styles.amountInput, { backgroundColor: colors.card, color: colors.text }]}
                   placeholder="$0.00"
-                  placeholderTextColor="#A0A0A0"
+                  placeholderTextColor={colors.placeholder}
                   value={amountUsd ? `$${amountUsd}` : ""}
                   onChangeText={(text) => setAmountUsd(text.replace(/[^0-9.]/g, ""))}
                   keyboardType="decimal-pad"
@@ -193,13 +195,15 @@ export default function Trade() {
                       onPress={() => setAmountUsd(String(amount))}
                       style={[
                         styles.quickPill,
-                        isActive ? styles.quickPillActive : styles.quickPillInactive,
+                        isActive
+                          ? { backgroundColor: colors.pillActive }
+                          : [styles.quickPillInactive, { backgroundColor: colors.pillInactive }],
                       ]}
                     >
                       <Text
                         style={[
                           styles.quickPillText,
-                          { color: isActive ? "#FFFFFF" : "#71717A" },
+                          { color: isActive ? colors.pillActiveText : colors.secondaryText },
                         ]}
                       >
                         ${amount.toLocaleString()}
@@ -212,8 +216,8 @@ export default function Trade() {
                   style={[
                     styles.quickPill,
                     parsedAmount === Math.floor(balance)
-                      ? styles.quickPillActive
-                      : styles.quickPillInactive,
+                      ? { backgroundColor: colors.pillActive }
+                      : [styles.quickPillInactive, { backgroundColor: colors.pillInactive }],
                   ]}
                 >
                   <Text
@@ -221,7 +225,7 @@ export default function Trade() {
                       styles.quickPillText,
                       {
                         color:
-                          parsedAmount === Math.floor(balance) ? "#FFFFFF" : "#71717A",
+                          parsedAmount === Math.floor(balance) ? colors.pillActiveText : colors.secondaryText,
                       },
                     ]}
                   >
@@ -231,17 +235,17 @@ export default function Trade() {
               </View>
 
               {/* You'll receive */}
-              <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>You'll receive</Text>
-                <Text style={styles.infoValue}>
+              <View style={[styles.infoRow, { borderBottomColor: colors.border }]}>
+                <Text style={[styles.infoLabel, { color: colors.secondaryText }]}>You'll receive</Text>
+                <Text style={[styles.infoValue, { color: colors.text }]}>
                   {quantity > 0 ? quantity.toFixed(6) : "0.00000"} {baseAsset}
                 </Text>
               </View>
 
               {/* Available balance */}
-              <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>Available balance</Text>
-                <Text style={styles.infoValue}>{formatPrice(balance)}</Text>
+              <View style={[styles.infoRow, { borderBottomColor: colors.border }]}>
+                <Text style={[styles.infoLabel, { color: colors.secondaryText }]}>Available balance</Text>
+                <Text style={[styles.infoValue, { color: colors.text }]}>{formatPrice(balance)}</Text>
               </View>
 
               {/* Confirm Button */}
@@ -250,17 +254,18 @@ export default function Trade() {
                   <ActivityIndicator
                     size="large"
                     style={{ height: 52 }}
-                    color="#000000"
+                    color={colors.text}
                   />
                 ) : (
                   <Pressable
                     onPress={handleTrade}
                     style={({ pressed }) => [
                       styles.confirmButton,
+                      { backgroundColor: colors.buttonPrimary },
                       pressed && { opacity: 0.8 },
                     ]}
                   >
-                    <Text style={styles.confirmText}>
+                    <Text style={[styles.confirmText, { color: colors.buttonPrimaryText }]}>
                       Confirm {side === "buy" ? "Purchase" : "Sale"}
                     </Text>
                   </Pressable>
@@ -275,7 +280,7 @@ export default function Trade() {
 
   // --- COIN DETAIL VIEW ---
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.surface }]}>
       <SafeAreaView style={styles.safeArea}>
         <ScrollView
           contentContainerStyle={styles.scrollContent}
@@ -284,9 +289,9 @@ export default function Trade() {
           {/* Top Bar */}
           <View style={styles.topBar}>
             <Pressable onPress={() => router.back()} style={styles.backButton}>
-              <Text style={styles.backText}>{"\u2190"} Back</Text>
+              <Text style={[styles.backText, { color: colors.text }]}>{"\u2190"} Back</Text>
             </Pressable>
-            <Pressable onPress={handleWatchlistToggle} style={styles.watchlistButton}>
+            <Pressable onPress={handleWatchlistToggle} style={[styles.watchlistButton, { backgroundColor: colors.card }]}>
               <Text style={styles.watchlistIcon}>
                 {watched ? "\u2605" : "\u2606"}
               </Text>
@@ -297,19 +302,19 @@ export default function Trade() {
           <View style={styles.coinHeader}>
             <CoinIcon symbol={baseAsset ?? ""} size={56} />
             <View style={styles.coinHeaderText}>
-              <Text style={styles.coinName}>{coinName}</Text>
-              <Text style={styles.coinSymbol}>{baseAsset}/USDT</Text>
+              <Text style={[styles.coinName, { color: colors.text }]}>{coinName}</Text>
+              <Text style={[styles.coinSymbol, { color: colors.secondaryText }]}>{baseAsset}/USDT</Text>
             </View>
           </View>
 
           {/* Price */}
-          <Text style={styles.priceValue}>
+          <Text style={[styles.priceValue, { color: colors.text }]}>
             {price ? formatPrice(price.price) : "--"}
           </Text>
           <Text style={styles.priceChange}>+2.4% today</Text>
 
           {/* Chart Placeholder */}
-          <View style={styles.chartArea}>
+          <View style={[styles.chartArea, { backgroundColor: colors.card }]}>
             <View style={styles.chartGreenFill} />
             <View style={styles.chartLineGreen} />
           </View>
@@ -323,15 +328,15 @@ export default function Trade() {
                 style={[
                   styles.timePill,
                   activeTimePeriod === period
-                    ? styles.timePillActive
-                    : styles.timePillInactive,
+                    ? { backgroundColor: colors.pillActive }
+                    : [styles.timePillInactive, { backgroundColor: colors.pillInactive }],
                 ]}
               >
                 <Text
                   style={[
                     styles.timePillText,
                     {
-                      color: activeTimePeriod === period ? "#FFFFFF" : "#71717A",
+                      color: activeTimePeriod === period ? colors.pillActiveText : colors.secondaryText,
                     },
                   ]}
                 >
@@ -343,21 +348,21 @@ export default function Trade() {
 
           {/* Stats Row */}
           <View style={styles.statsRow}>
-            <View style={styles.statBox}>
-              <Text style={styles.statLabel}>24h High</Text>
-              <Text style={styles.statValue}>
+            <View style={[styles.statBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <Text style={[styles.statLabel, { color: colors.secondaryText }]}>24h High</Text>
+              <Text style={[styles.statValue, { color: colors.text }]}>
                 {price ? formatPrice(price.price * 1.02) : "--"}
               </Text>
             </View>
-            <View style={styles.statBox}>
-              <Text style={styles.statLabel}>24h Low</Text>
-              <Text style={styles.statValue}>
+            <View style={[styles.statBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <Text style={[styles.statLabel, { color: colors.secondaryText }]}>24h Low</Text>
+              <Text style={[styles.statValue, { color: colors.text }]}>
                 {price ? formatPrice(price.price * 0.98) : "--"}
               </Text>
             </View>
-            <View style={styles.statBox}>
-              <Text style={styles.statLabel}>Volume</Text>
-              <Text style={styles.statValue}>$1.2B</Text>
+            <View style={[styles.statBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <Text style={[styles.statLabel, { color: colors.secondaryText }]}>Volume</Text>
+              <Text style={[styles.statValue, { color: colors.text }]}>$1.2B</Text>
             </View>
           </View>
 
@@ -367,21 +372,21 @@ export default function Trade() {
               onPress={() => openOrder("buy")}
               style={({ pressed }) => [
                 styles.actionButton,
-                styles.buyButton,
+                { backgroundColor: colors.buttonPrimary },
                 pressed && { opacity: 0.8 },
               ]}
             >
-              <Text style={styles.actionButtonText}>Buy {baseAsset}</Text>
+              <Text style={[styles.actionButtonText, { color: colors.buttonPrimaryText }]}>Buy {baseAsset}</Text>
             </Pressable>
             <Pressable
               onPress={() => openOrder("sell")}
               style={({ pressed }) => [
                 styles.actionButton,
-                styles.sellButton,
+                { backgroundColor: colors.buttonPrimary },
                 pressed && { opacity: 0.8 },
               ]}
             >
-              <Text style={styles.actionButtonText}>Sell {baseAsset}</Text>
+              <Text style={[styles.actionButtonText, { color: colors.buttonPrimaryText }]}>Sell {baseAsset}</Text>
             </Pressable>
           </View>
         </ScrollView>
@@ -393,7 +398,6 @@ export default function Trade() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F5F5F5",
   },
   safeArea: {
     flex: 1,
@@ -402,7 +406,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#F5F5F5",
   },
   keyboardView: {
     flex: 1,
@@ -425,14 +428,12 @@ const styles = StyleSheet.create({
   backText: {
     fontSize: 16,
     fontWeight: "500",
-    color: "#000000",
     fontFamily: "Outfit",
   },
   watchlistButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "#FFFFFF",
     justifyContent: "center",
     alignItems: "center",
     shadowColor: "#000",
@@ -459,13 +460,11 @@ const styles = StyleSheet.create({
   coinName: {
     fontSize: 22,
     fontWeight: "700",
-    color: "#000000",
     fontFamily: "Outfit",
   },
   coinSymbol: {
     fontSize: 14,
     fontWeight: "400",
-    color: "#71717A",
     marginTop: 2,
     fontFamily: "Outfit",
   },
@@ -474,7 +473,6 @@ const styles = StyleSheet.create({
   priceValue: {
     fontSize: 36,
     fontWeight: "700",
-    color: "#000000",
     lineHeight: 44,
     fontFamily: "Outfit",
   },
@@ -489,7 +487,6 @@ const styles = StyleSheet.create({
 
   // Chart
   chartArea: {
-    backgroundColor: "#FFFFFF",
     borderRadius: 16,
     height: 180,
     marginBottom: Spacing.three,
@@ -529,11 +526,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 20,
   },
-  timePillActive: {
-    backgroundColor: "#000000",
-  },
   timePillInactive: {
-    backgroundColor: "#FFFFFF",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.04,
@@ -554,24 +547,20 @@ const styles = StyleSheet.create({
   },
   statBox: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
     borderRadius: 12,
     padding: 12,
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#F0F0F3",
   },
   statLabel: {
     fontSize: 12,
     fontWeight: "400",
-    color: "#71717A",
     marginBottom: 4,
     fontFamily: "Outfit",
   },
   statValue: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#000000",
     fontFamily: "Outfit",
   },
 
@@ -587,16 +576,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  buyButton: {
-    backgroundColor: "#000000",
-  },
-  sellButton: {
-    backgroundColor: "#000000",
-  },
   actionButtonText: {
     fontSize: 16,
     fontWeight: "700",
-    color: "#FFFFFF",
     fontFamily: "Outfit",
   },
 
@@ -604,7 +586,6 @@ const styles = StyleSheet.create({
   orderTitle: {
     fontSize: 28,
     fontWeight: "700",
-    color: "#000000",
     marginTop: Spacing.three,
     marginBottom: 4,
     fontFamily: "Outfit",
@@ -612,7 +593,6 @@ const styles = StyleSheet.create({
   currentPriceLabel: {
     fontSize: 14,
     fontWeight: "400",
-    color: "#71717A",
     marginBottom: Spacing.four,
     fontFamily: "Outfit",
   },
@@ -622,7 +602,6 @@ const styles = StyleSheet.create({
   amountLabel: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#000000",
     marginBottom: Spacing.two,
     fontFamily: "Outfit",
   },
@@ -632,8 +611,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     fontSize: 24,
     fontWeight: "600",
-    backgroundColor: "#FFFFFF",
-    color: "#000000",
     fontFamily: "Outfit",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
@@ -651,11 +628,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 20,
   },
-  quickPillActive: {
-    backgroundColor: "#000000",
-  },
   quickPillInactive: {
-    backgroundColor: "#FFFFFF",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.04,
@@ -673,31 +646,26 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: "#F0F0F3",
   },
   infoLabel: {
     fontSize: 14,
     fontWeight: "400",
-    color: "#71717A",
     fontFamily: "Outfit",
   },
   infoValue: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#000000",
     fontFamily: "Outfit",
   },
   confirmButton: {
     height: 52,
     borderRadius: 12,
-    backgroundColor: "#000000",
     justifyContent: "center",
     alignItems: "center",
   },
   confirmText: {
     fontSize: 16,
     fontWeight: "700",
-    color: "#FFFFFF",
     fontFamily: "Outfit",
   },
 });
