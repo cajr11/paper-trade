@@ -90,6 +90,22 @@ func (s *TradingService) ExecuteTrade(ctx context.Context, userID string, req Tr
 		return nil, fmt.Errorf("failed to record trade: %w", err)
 	}
 
+	// Create notification for the filled order
+	sideLabel := "Buy"
+	sideVerb := "bought"
+	if req.Side == "sell" {
+		sideLabel = "Sell"
+		sideVerb = "sold"
+	}
+	notification := &store.Notification{
+		UserID: userID,
+		Type:   "order_filled",
+		Title:  fmt.Sprintf("%s order filled", sideLabel),
+		Body:   fmt.Sprintf("You %s %.4f %s for $%.2f", sideVerb, req.Quantity, req.BaseAsset, total),
+	}
+	// Best-effort: don't fail the trade if notification creation fails
+	_ = s.notificationStore.CreateTx(ctx, tx, notification)
+
 	if err := tx.Commit(); err != nil {
 		return nil, fmt.Errorf("failed to commit transaction: %w", err)
 	}
