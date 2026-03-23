@@ -141,7 +141,7 @@ export default function HomeScreen() {
           {/* Holdings Section Header */}
           <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>Holdings</Text>
-            <Pressable>
+            <Pressable onPress={() => router.push("/(authenticated)/holdings")}>
               <Text style={[styles.seeAll, { color: colors.secondaryText }]}>{"See all \u2192"}</Text>
             </Pressable>
           </View>
