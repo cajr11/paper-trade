@@ -16,6 +16,7 @@ import ErrorState from "@/components/ui/ErrorState";
 import { CardSkeleton, ListSkeleton } from "@/components/ui/Skeleton";
 import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/useTheme";
+import { useNotificationStore } from "@/stores/notification-store";
 import { usePortfolioStore } from "@/stores/portfolio-store";
 import type { Holding } from "@/lib/api";
 
@@ -43,10 +44,12 @@ export default function HomeScreen() {
     fetchPortfolio,
     refreshPortfolio,
   } = usePortfolioStore();
+  const { unreadCount, fetchUnreadCount } = useNotificationStore();
 
   useEffect(() => {
     fetchPortfolio();
-  }, [fetchPortfolio]);
+    fetchUnreadCount();
+  }, [fetchPortfolio, fetchUnreadCount]);
 
   const onRefresh = useCallback(() => {
     refreshPortfolio();
@@ -116,10 +119,20 @@ export default function HomeScreen() {
           {/* Header Row */}
           <View style={styles.headerRow}>
             <Text style={[styles.headerTitle, { color: colors.text }]}>Portfolio</Text>
-            <Pressable style={[styles.bellButton, { backgroundColor: colors.card }]}>
+            <Pressable
+              style={[styles.bellButton, { backgroundColor: colors.card }]}
+              onPress={() => router.push("/(authenticated)/notifications")}
+            >
               <View style={styles.bellIconWrapper}>
                 <Ionicons name="notifications-outline" size={18} color={colors.icon} />
               </View>
+              {unreadCount > 0 && (
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </Text>
+                </View>
+              )}
             </Pressable>
           </View>
 
@@ -254,6 +267,24 @@ const styles = StyleSheet.create({
     height: 18,
     justifyContent: "center",
     alignItems: "center",
+  },
+  badge: {
+    position: "absolute",
+    top: -2,
+    right: -2,
+    backgroundColor: "#EF4444",
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 4,
+  },
+  badgeText: {
+    color: "#FFFFFF",
+    fontSize: 10,
+    fontWeight: "700",
+    fontFamily: "Outfit",
   },
 
   // Balance
