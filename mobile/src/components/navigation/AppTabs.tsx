@@ -12,14 +12,21 @@ export default function AppTabs() {
     <NativeTabs
       backgroundColor={colors.background}
       indicatorColor={colors.backgroundElement}
-      labelStyle={{ selected: { color: colors.text } }}
+      iconColor={{
+        default: "#A0A0A0",
+        selected: colors.text,
+      }}
+      labelStyle={{
+        default: { color: "#A0A0A0", fontSize: 10 },
+        selected: { color: colors.text, fontSize: 10 },
+      }}
     >
       <NativeTabs.Trigger name="index">
-        <NativeTabs.Trigger.Label>Dashboard</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
           sf={{
-            default: "chart.pie",
-            selected: "chart.pie.fill",
+            default: "house",
+            selected: "house.fill",
           }}
           renderingMode="template"
         />
@@ -29,9 +36,10 @@ export default function AppTabs() {
         <NativeTabs.Trigger.Label>Explore</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
           sf={{
-            default: "sparkle.magnifyingglass",
-            selected: "sparkle.magnifyingglass",
+            default: "safari",
+            selected: "safari.fill",
           }}
+          renderingMode="template"
         />
       </NativeTabs.Trigger>
 
@@ -42,6 +50,7 @@ export default function AppTabs() {
             default: "star",
             selected: "star.fill",
           }}
+          renderingMode="template"
         />
       </NativeTabs.Trigger>
 
@@ -49,9 +58,10 @@ export default function AppTabs() {
         <NativeTabs.Trigger.Label>History</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
           sf={{
-            default: "clock.arrow.trianglehead.counterclockwise.rotate.90",
-            selected: "clock.arrow.trianglehead.counterclockwise.rotate.90",
+            default: "clock",
+            selected: "clock.fill",
           }}
+          renderingMode="template"
         />
       </NativeTabs.Trigger>
 
@@ -62,6 +72,7 @@ export default function AppTabs() {
             default: "person",
             selected: "person.fill",
           }}
+          renderingMode="template"
         />
       </NativeTabs.Trigger>
 
