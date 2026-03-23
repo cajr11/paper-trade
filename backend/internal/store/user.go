@@ -71,3 +71,9 @@ func (s *UserStore) GetByID(ctx context.Context, id string) (*User, error) {
 
 	return user, nil
 }
+
+func (s *UserStore) UpdateBalance(ctx context.Context, tx *sql.Tx, userID string, newBalance float64) error {
+	query := `UPDATE users SET balance = $1, updated_at = NOW() WHERE id = $2`
+	_, err := tx.ExecContext(ctx, query, newBalance, userID)
+	return err
+}
