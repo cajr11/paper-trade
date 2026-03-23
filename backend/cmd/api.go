@@ -53,6 +53,7 @@ func (app *application) mount() http.Handler {
 		// Public routes
 		r.Get("/health", health.HandleHealthCheck)
 		r.Get("/tickers", tickers.HandleGetAllPairs)
+		r.Get("/tickers/price", tickers.HandleGetPrice)
 		r.Post("/auth/signup", authHandler.HandleSignup)
 		r.Post("/auth/login", authHandler.HandleLogin)
 
