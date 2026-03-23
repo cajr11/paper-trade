@@ -33,7 +33,7 @@ export default function Collapsible({
             }}
             size={14}
             weight="bold"
-            tintColor={theme.text}
+            tintColor={theme.colors.text}
             style={{ transform: [{ rotate: isOpen ? "-90deg" : "90deg" }] }}
           />
         </ThemedView>
