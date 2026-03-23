@@ -85,6 +85,7 @@ export default function NotificationsScreen() {
     notifications,
     loading,
     refreshing,
+    error,
     fetchNotifications,
     refreshNotifications,
     markAsRead,
@@ -130,7 +131,16 @@ export default function NotificationsScreen() {
             <RefreshControl refreshing={refreshing} onRefresh={refreshNotifications} />
           }
         >
-          {notifications.length === 0 ? (
+          {error && notifications.length === 0 ? (
+            <View style={[styles.emptyCard, { backgroundColor: colors.card }]}>
+              <Text style={[styles.emptyText, { color: colors.loss }]}>{error}</Text>
+              <Pressable onPress={fetchNotifications} style={{ marginTop: Spacing.two }}>
+                <Text style={[styles.emptyText, { color: colors.text, fontWeight: "600" }]}>
+                  Tap to retry
+                </Text>
+              </Pressable>
+            </View>
+          ) : notifications.length === 0 ? (
             <View style={[styles.emptyCard, { backgroundColor: colors.card }]}>
               <Text style={[styles.emptyText, { color: colors.secondaryText }]}>
                 No notifications yet

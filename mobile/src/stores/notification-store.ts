@@ -6,6 +6,7 @@ type NotificationState = {
   unreadCount: number;
   loading: boolean;
   refreshing: boolean;
+  error: string | null;
   fetchNotifications: () => Promise<void>;
   refreshNotifications: () => Promise<void>;
   fetchUnreadCount: () => Promise<void>;
@@ -18,24 +19,25 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
   unreadCount: 0,
   loading: false,
   refreshing: false,
+  error: null,
 
   fetchNotifications: async () => {
-    set({ loading: true });
+    set({ loading: true, error: null });
     try {
       const notifications = await api.getNotifications();
       set({ notifications, loading: false });
     } catch {
-      set({ loading: false });
+      set({ loading: false, error: "Failed to load notifications" });
     }
   },
 
   refreshNotifications: async () => {
-    set({ refreshing: true });
+    set({ refreshing: true, error: null });
     try {
       const notifications = await api.getNotifications();
       set({ notifications, refreshing: false });
     } catch {
-      set({ refreshing: false });
+      set({ refreshing: false, error: "Failed to refresh notifications" });
     }
   },
 
