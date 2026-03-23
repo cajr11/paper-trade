@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 
 import CoinIcon, { getCoinName } from "@/components/ui/CoinIcon";
 import ErrorState from "@/components/ui/ErrorState";
@@ -98,7 +99,7 @@ export default function HomeScreen() {
           <View style={styles.headerRow}>
             <Text style={styles.headerTitle}>Portfolio</Text>
             <Pressable style={styles.bellButton}>
-              <Text style={styles.bellIcon}>&#128276;</Text>
+              <Ionicons name="notifications-outline" size={20} color="#000000" />
             </Pressable>
           </View>
 
@@ -219,9 +220,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 4,
     elevation: 2,
-  },
-  bellIcon: {
-    fontSize: 18,
   },
 
   // Balance

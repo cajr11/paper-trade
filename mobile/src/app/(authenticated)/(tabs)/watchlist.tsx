@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 
 import CoinIcon, { getCoinName } from "@/components/ui/CoinIcon";
 import { Spacing } from "@/constants/theme";
@@ -124,7 +125,7 @@ export default function Watchlist() {
         {/* Search Bar */}
         <View style={styles.searchContainer}>
           <View style={styles.searchInputWrapper}>
-            <Text style={styles.searchIcon}>&#128269;</Text>
+            <Ionicons name="search" size={18} color="#A0A0A0" style={styles.searchIcon} />
             <TextInput
               style={styles.searchInput}
               placeholder="Search coins..."
@@ -219,7 +220,6 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   searchIcon: {
-    fontSize: 16,
     marginRight: 8,
   },
   searchInput: {
