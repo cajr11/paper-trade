@@ -41,6 +41,7 @@ func (app *application) mount() http.Handler {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(60 * time.Second))
+	r.Use(appMiddleware.CORS)
 
 	// Initialize services and handlers
 	authService := auth.NewAuthService(app.store.User)
@@ -60,6 +61,9 @@ func (app *application) mount() http.Handler {
 		// Protected routes
 		r.Group(func(r chi.Router) {
 			r.Use(appMiddleware.AuthRequired)
+
+			// User profile
+			r.Get("/me", authHandler.HandleGetMe)
 
 			// Portfolio
 			r.Get("/portfolio", tradingHandler.HandleGetPortfolio)

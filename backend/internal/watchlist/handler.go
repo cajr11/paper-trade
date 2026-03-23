@@ -6,7 +6,7 @@ import (
 	"errors"
 	"net/http"
 
-	appMiddleware "github.com/cajr11/paper-trade/backend/internal/middleware"
+	appcontext "github.com/cajr11/paper-trade/backend/internal/context"
 	"github.com/cajr11/paper-trade/backend/internal/store"
 )
 
@@ -24,7 +24,7 @@ type AddRequest struct {
 }
 
 func (h *WatchlistHandler) HandleGetWatchlist(w http.ResponseWriter, r *http.Request) {
-	userID := appMiddleware.GetUserID(r.Context())
+	userID := appcontext.GetUserID(r.Context())
 
 	items, err := h.store.GetByUserID(r.Context(), userID)
 	if err != nil {
@@ -40,7 +40,7 @@ func (h *WatchlistHandler) HandleGetWatchlist(w http.ResponseWriter, r *http.Req
 }
 
 func (h *WatchlistHandler) HandleAddToWatchlist(w http.ResponseWriter, r *http.Request) {
-	userID := appMiddleware.GetUserID(r.Context())
+	userID := appcontext.GetUserID(r.Context())
 
 	var req AddRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -63,7 +63,7 @@ func (h *WatchlistHandler) HandleAddToWatchlist(w http.ResponseWriter, r *http.R
 }
 
 func (h *WatchlistHandler) HandleRemoveFromWatchlist(w http.ResponseWriter, r *http.Request) {
-	userID := appMiddleware.GetUserID(r.Context())
+	userID := appcontext.GetUserID(r.Context())
 	symbol := r.URL.Query().Get("symbol")
 
 	if symbol == "" {

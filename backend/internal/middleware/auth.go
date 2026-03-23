@@ -1,17 +1,26 @@
 package middleware
 
 import (
-	"context"
 	"net/http"
 	"strings"
 
-	"github.com/cajr11/paper-trade/backend/internal/auth"
+	appcontext "github.com/cajr11/paper-trade/backend/internal/context"
+	"github.com/golang-jwt/jwt/v5"
 )
 
-type contextKey string
+type Claims struct {
+	UserID string `json:"user_id"`
+	Email  string `json:"email"`
+	jwt.RegisteredClaims
+}
 
-const UserIDKey contextKey = "userID"
-const UserEmailKey contextKey = "userEmail"
+type TokenValidator func(tokenString string) (*Claims, error)
+
+var validateToken TokenValidator
+
+func SetTokenValidator(v TokenValidator) {
+	validateToken = v
+}
 
 func AuthRequired(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -27,29 +36,15 @@ func AuthRequired(next http.Handler) http.Handler {
 			return
 		}
 
-		claims, err := auth.ValidateToken(parts[1])
+		claims, err := validateToken(parts[1])
 		if err != nil {
 			http.Error(w, `{"error":"invalid or expired token"}`, http.StatusUnauthorized)
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), UserIDKey, claims.UserID)
-		ctx = context.WithValue(ctx, UserEmailKey, claims.Email)
+		ctx := appcontext.WithUserID(r.Context(), claims.UserID)
+		ctx = appcontext.WithUserEmail(ctx, claims.Email)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
-}
-
-func GetUserID(ctx context.Context) string {
-	if id, ok := ctx.Value(UserIDKey).(string); ok {
-		return id
-	}
-	return ""
-}
-
-func GetUserEmail(ctx context.Context) string {
-	if email, ok := ctx.Value(UserEmailKey).(string); ok {
-		return email
-	}
-	return ""
 }

@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	appMiddleware "github.com/cajr11/paper-trade/backend/internal/middleware"
+	appcontext "github.com/cajr11/paper-trade/backend/internal/context"
 	"github.com/cajr11/paper-trade/backend/internal/store"
 	"github.com/cajr11/paper-trade/backend/internal/validator"
 )
@@ -28,7 +28,7 @@ func NewTradingHandler(service *TradingService, holdingStore *store.HoldingStore
 }
 
 func (h *TradingHandler) HandleExecuteTrade(w http.ResponseWriter, r *http.Request) {
-	userID := appMiddleware.GetUserID(r.Context())
+	userID := appcontext.GetUserID(r.Context())
 
 	var req TradeRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -60,7 +60,7 @@ func (h *TradingHandler) HandleExecuteTrade(w http.ResponseWriter, r *http.Reque
 }
 
 func (h *TradingHandler) HandleGetPortfolio(w http.ResponseWriter, r *http.Request) {
-	userID := appMiddleware.GetUserID(r.Context())
+	userID := appcontext.GetUserID(r.Context())
 
 	holdings, err := h.holdingStore.GetByUserID(r.Context(), userID)
 	if err != nil {
@@ -87,7 +87,7 @@ func (h *TradingHandler) HandleGetPortfolio(w http.ResponseWriter, r *http.Reque
 }
 
 func (h *TradingHandler) HandleGetTradeHistory(w http.ResponseWriter, r *http.Request) {
-	userID := appMiddleware.GetUserID(r.Context())
+	userID := appcontext.GetUserID(r.Context())
 
 	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
 	offset, _ := strconv.Atoi(r.URL.Query().Get("offset"))

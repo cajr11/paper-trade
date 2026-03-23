@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 
+	appcontext "github.com/cajr11/paper-trade/backend/internal/context"
 	"github.com/cajr11/paper-trade/backend/internal/validator"
 )
 
@@ -96,6 +97,23 @@ func (h *AuthHandler) HandleLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusOK, session)
+}
+
+func (h *AuthHandler) HandleGetMe(w http.ResponseWriter, r *http.Request) {
+	userID := appcontext.GetUserID(r.Context())
+
+	user, err := h.service.userStore.GetByID(r.Context(), userID)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to fetch user"})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, UserResponse{
+		ID:       user.ID,
+		Email:    user.Email,
+		FullName: user.FullName,
+		Balance:  user.Balance,
+	})
 }
 
 func writeJSON(w http.ResponseWriter, status int, data interface{}) {
