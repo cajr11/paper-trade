@@ -33,6 +33,11 @@ func main() {
 	}
 	defer database.Close()
 
+	// Run database migrations
+	if err := db.RunMigrations(database); err != nil {
+		log.Panic("failed to run migrations: ", err)
+	}
+
 	storage := store.NewStorage(database)
 
 	app := &application{
