@@ -1,69 +1,230 @@
-import { StyleSheet } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import HintRow from "@/components/composed/HintRow";
 import { ThemedText } from "@/components/ui/ThemedText";
 import { ThemedView } from "@/components/ui/ThemedView";
-import { BottomTabInset, MaxContentWidth, Spacing } from "@/constants/theme";
+import { Spacing } from "@/constants/theme";
+import { useTheme } from "@/hooks/useTheme";
+import { api, type Holding, type Portfolio } from "@/lib/api";
+
+function formatCurrency(value: number): string {
+  return "$" + value.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
 
 export default function HomeScreen() {
+  const { colors } = useTheme();
+  const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchPortfolio = useCallback(async () => {
+    try {
+      const data = await api.getPortfolio();
+      setPortfolio(data);
+    } catch {
+      // silently fail, user sees empty state
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchPortfolio();
+  }, [fetchPortfolio]);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchPortfolio();
+  };
+
+  const totalInvested = portfolio?.holdings.reduce(
+    (sum, h) => sum + h.quantity * h.avg_buy_price,
+    0,
+  ) ?? 0;
+
+  const totalValue = (portfolio?.balance ?? 0) + totalInvested;
+
+  if (loading) {
+    return (
+      <ThemedView style={styles.centered}>
+        <ActivityIndicator size="large" />
+      </ThemedView>
+    );
+  }
+
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          {/* <AnimatedIcon /> */}
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        >
+          {/* Header */}
+          <ThemedText type="subtitle" style={styles.header}>
+            Dashboard
           </ThemedText>
-        </ThemedView>
 
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
+          {/* Portfolio Summary Card */}
+          <ThemedView type="backgroundElement" style={styles.card}>
+            <ThemedText type="small" themeColor="textSecondary">
+              Total Portfolio Value
+            </ThemedText>
+            <ThemedText type="title" style={styles.totalValue}>
+              {formatCurrency(totalValue)}
+            </ThemedText>
+
+            <View style={styles.balanceRow}>
+              <View style={styles.balanceItem}>
+                <ThemedText type="small" themeColor="textSecondary">
+                  Cash Available
+                </ThemedText>
+                <ThemedText type="default">
+                  {formatCurrency(portfolio?.balance ?? 0)}
+                </ThemedText>
+              </View>
+              <View style={styles.balanceItem}>
+                <ThemedText type="small" themeColor="textSecondary">
+                  Invested
+                </ThemedText>
+                <ThemedText type="default">
+                  {formatCurrency(totalInvested)}
+                </ThemedText>
+              </View>
+            </View>
+          </ThemedView>
+
+          {/* Holdings */}
+          <ThemedText type="default" style={styles.sectionTitle}>
+            Holdings
+          </ThemedText>
+
+          {(!portfolio?.holdings || portfolio.holdings.length === 0) ? (
+            <ThemedView type="backgroundElement" style={styles.emptyCard}>
+              <ThemedText type="small" themeColor="textSecondary" style={styles.emptyText}>
+                No holdings yet. Go to Explore to start trading!
+              </ThemedText>
+            </ThemedView>
+          ) : (
+            portfolio.holdings.map((holding: Holding) => (
+              <HoldingRow key={holding.id} holding={holding} colors={colors} />
+            ))
+          )}
+        </ScrollView>
       </SafeAreaView>
     </ThemedView>
+  );
+}
+
+function HoldingRow({
+  holding,
+  colors,
+}: {
+  holding: Holding;
+  colors: Record<string, string>;
+}) {
+  const value = holding.quantity * holding.avg_buy_price;
+
+  return (
+    <View
+      style={[styles.holdingRow, { backgroundColor: colors.backgroundElement }]}
+    >
+      <View style={styles.holdingLeft}>
+        <ThemedText type="default" style={styles.holdingSymbol}>
+          {holding.base_asset}
+        </ThemedText>
+        <ThemedText type="small" themeColor="textSecondary">
+          {holding.quantity.toFixed(6)} @ {formatCurrency(holding.avg_buy_price)}
+        </ThemedText>
+      </View>
+      <View style={styles.holdingRight}>
+        <ThemedText type="default">{formatCurrency(value)}</ThemedText>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    flexDirection: "row",
   },
   safeArea: {
     flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: "center",
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
   },
-  heroSection: {
-    alignItems: "center",
-    justifyContent: "center",
+  centered: {
     flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
+    justifyContent: "center",
+    alignItems: "center",
   },
-  title: {
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: Spacing.four,
+    paddingBottom: 100,
+  },
+  header: {
+    marginBottom: Spacing.four,
+    marginTop: Spacing.three,
+  },
+  card: {
+    padding: Spacing.four,
+    borderRadius: 16,
+    gap: Spacing.two,
+    marginBottom: Spacing.four,
+  },
+  totalValue: {
+    fontSize: 36,
+    lineHeight: 44,
+  },
+  balanceRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: Spacing.two,
+  },
+  balanceItem: {
+    gap: 4,
+  },
+  sectionTitle: {
+    fontWeight: "700",
+    marginBottom: Spacing.two,
+  },
+  emptyCard: {
+    padding: Spacing.four,
+    borderRadius: 16,
+    alignItems: "center",
+  },
+  emptyText: {
     textAlign: "center",
   },
-  code: {
-    textTransform: "uppercase",
+  holdingRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: Spacing.three,
+    borderRadius: 12,
+    marginBottom: Spacing.two,
   },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: "stretch",
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
+  holdingLeft: {
+    gap: 4,
+  },
+  holdingRight: {
+    alignItems: "flex-end",
+  },
+  holdingSymbol: {
+    fontWeight: "700",
   },
 });
