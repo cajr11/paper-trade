@@ -99,7 +99,9 @@ export default function HomeScreen() {
           <View style={styles.headerRow}>
             <Text style={styles.headerTitle}>Portfolio</Text>
             <Pressable style={styles.bellButton}>
-              <Ionicons name="notifications-outline" size={20} color="#000000" />
+              <View style={styles.bellIconWrapper}>
+                <Ionicons name="notifications-outline" size={18} color="#000000" />
+              </View>
             </Pressable>
           </View>
 
@@ -220,6 +222,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 4,
     elevation: 2,
+  },
+  bellIconWrapper: {
+    width: 18,
+    height: 18,
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   // Balance
