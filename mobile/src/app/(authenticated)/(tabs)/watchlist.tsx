@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -7,6 +7,7 @@ import {
   RefreshControl,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -21,6 +22,7 @@ export default function Watchlist() {
   const router = useRouter();
   const { items, loading, refreshing, fetchWatchlist, refreshWatchlist, removeItem } =
     useWatchlistStore();
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     fetchWatchlist();
@@ -29,6 +31,17 @@ export default function Watchlist() {
   const onRefresh = useCallback(() => {
     refreshWatchlist();
   }, [refreshWatchlist]);
+
+  const filtered = search.trim()
+    ? items.filter((item) => {
+        const query = search.toLowerCase();
+        return (
+          item.base_asset.toLowerCase().includes(query) ||
+          item.symbol.toLowerCase().includes(query) ||
+          getCoinName(item.base_asset).toLowerCase().includes(query)
+        );
+      })
+    : items;
 
   const handleRemove = (symbol: string, baseAsset: string) => {
     Alert.alert(
@@ -67,6 +80,7 @@ export default function Watchlist() {
     return (
       <Pressable
         onPress={() => handlePress(item)}
+        onLongPress={() => handleRemove(item.symbol, item.base_asset)}
         style={({ pressed }) => [
           styles.row,
           pressed && { opacity: 0.7 },
@@ -77,13 +91,10 @@ export default function Watchlist() {
           <Text style={styles.coinName}>{coinName}</Text>
           <Text style={styles.coinSymbol}>{item.base_asset}/USDT</Text>
         </View>
-        <Pressable
-          onPress={() => handleRemove(item.symbol, item.base_asset)}
-          hitSlop={8}
-          style={styles.removeButton}
-        >
-          <Text style={styles.removeText}>Remove</Text>
-        </Pressable>
+        <View style={styles.rowRight}>
+          <Text style={styles.pricePlaceholder}>{item.base_asset}/USDT</Text>
+          <Text style={styles.changePlaceholder}>+0.00%</Text>
+        </View>
       </Pressable>
     );
   };
@@ -99,10 +110,35 @@ export default function Watchlist() {
   return (
     <View style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
-        <Text style={styles.header}>Watchlist</Text>
+        {/* Header */}
+        <View style={styles.headerRow}>
+          <Text style={styles.header}>Watchlist</Text>
+          <Pressable
+            onPress={() => router.push("/(authenticated)/(tabs)/explore")}
+            style={styles.addButton}
+          >
+            <Text style={styles.addIcon}>+</Text>
+          </Pressable>
+        </View>
+
+        {/* Search Bar */}
+        <View style={styles.searchContainer}>
+          <View style={styles.searchInputWrapper}>
+            <Text style={styles.searchIcon}>&#128269;</Text>
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search coins..."
+              placeholderTextColor="#A0A0A0"
+              value={search}
+              onChangeText={setSearch}
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+          </View>
+        </View>
 
         <FlatList
-          data={items}
+          data={filtered}
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
@@ -137,14 +173,61 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#F5F5F5",
   },
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: Spacing.four,
+    marginTop: Spacing.three,
+    marginBottom: Spacing.three,
+  },
   header: {
     fontSize: 28,
     fontWeight: "700",
     color: "#000000",
-    marginBottom: Spacing.three,
-    marginTop: Spacing.three,
-    paddingHorizontal: Spacing.four,
     fontFamily: "Outfit",
+  },
+  addButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#000000",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  addIcon: {
+    fontSize: 22,
+    fontWeight: "500",
+    color: "#FFFFFF",
+    lineHeight: 24,
+  },
+  searchContainer: {
+    paddingHorizontal: Spacing.four,
+    marginBottom: Spacing.three,
+  },
+  searchInputWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    paddingHorizontal: Spacing.three,
+    height: 48,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  searchIcon: {
+    fontSize: 16,
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: "#000000",
+    fontFamily: "Outfit",
+    height: 48,
   },
   listContent: {
     paddingHorizontal: Spacing.four,
@@ -180,16 +263,20 @@ const styles = StyleSheet.create({
     color: "#71717A",
     fontFamily: "Outfit",
   },
-  removeButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    backgroundColor: "#FEE2E2",
+  rowRight: {
+    alignItems: "flex-end",
+    gap: 2,
   },
-  removeText: {
-    fontSize: 13,
+  pricePlaceholder: {
+    fontSize: 14,
     fontWeight: "600",
-    color: "#EF4444",
+    color: "#000000",
+    fontFamily: "Outfit",
+  },
+  changePlaceholder: {
+    fontSize: 13,
+    fontWeight: "500",
+    color: "#22C55E",
     fontFamily: "Outfit",
   },
   emptyCard: {
