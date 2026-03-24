@@ -1,7 +1,15 @@
-import { Stack } from "expo-router";
+import { Redirect, Stack } from "expo-router";
 import React from "react";
 
+import { useSession } from "@/providers/SessionProvider";
+
 export default function AuthenticatedLayout() {
+  const { session, isLoading } = useSession();
+
+  if (!isLoading && !session) {
+    return <Redirect href="/login" />;
+  }
+
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(tabs)" />
