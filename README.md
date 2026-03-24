@@ -88,7 +88,7 @@ The mobile app connects to `http://localhost:8080/api/v1` in development mode.
   <tr>
     <td align="center"><img width="240" alt="watchlist" src="https://github.com/user-attachments/assets/afd44a2f-6dcb-4980-a8c1-cb97963a8a43" /></td>
     <td align="center"><img width="240" alt="history" src="https://github.com/user-attachments/assets/2699b13f-2c37-414c-a7cd-97c22bbc72d5" /></td>
-    <td align="center"><img width="240" alt="profile" src="https://github.com/user-attachments/assets/7d052c15-eb49-4203-9d40-ea6188013ab5" /></td>
+    <td align="center"><img width="240" alt="profile" src="https://github.com/user-attachments/assets/202812c1-5ff1-41d6-9921-0cbaf13cc9c2" /></td>
     <td align="center"><img width="240" alt="notifications" src="https://github.com/user-attachments/assets/1d7d20c6-1306-4098-a2a8-e300b941512f" /></td>
     <td align="center"><img width="240" alt="help-support" src="https://github.com/user-attachments/assets/301512e8-b8b1-485f-a124-40b6c8b11cd2" /></td>
     <td align="center"><img width="240" alt="faq" src="https://github.com/user-attachments/assets/f546dc79-412f-48eb-b6bf-cde9516933de" /></td>
