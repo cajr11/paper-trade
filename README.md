@@ -99,6 +99,8 @@ The mobile app connects to `http://localhost:8080/api/v1` in development mode.
 ## Walkthrough
 
 
+https://github.com/user-attachments/assets/5c1f13da-1e24-46a0-8860-01d8ad965599
+
 
 ## License
 
